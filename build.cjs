@@ -1,0 +1,5 @@
+const fs=require('node:fs');
+let t=fs.readFileSync('template.html','utf8');
+for(const [tag,file] of [['CORE','core.js'],['UI','ui.js']]) t=t.replace('/*'+tag+'*/',()=>fs.readFileSync(file,'utf8'));
+fs.writeFileSync('index.html',t);
+console.log('index.html', fs.statSync('index.html').size, 'bytes');

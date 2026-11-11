@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>买多了退不掉 · 装修材料按房间尺寸算采购量（瓷砖、地板、涂料、踢脚线、美缝）</title>
+<meta name="description" content="装修买料之前先算清「到底要买多少件」：瓷砖按房间尺寸做网格整除、把边界切剩的半块还能不能用在别处也算进去，地板按面积加余量再拆包，乳胶漆按可刷面积与遍数分桶，踢脚线按米数，美缝按缝长。全部由你填数字，页面不联网、不查行情价、不内置施工规范。">
+<style>
+  :root{
+    --bg:#f6f5f2; --card:#ffffff; --ink:#1a1712; --ink2:#565049; --ink3:#867f76;
+    --line:#e6e2db; --line2:#cfc9c0; --brand:#9a5b12; --brand2:#fdf3e6;
+    --good:#1a6b3c; --goodbg:#e8f5ec; --warn:#8a5600; --warnbg:#fdf3e3; --bad:#a8261b; --badbg:#fceceb;
+    --gray:#5b635c; --graybg:#f1f3f1;
+    --radius:12px; --w:920px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font:15px/1.7 -apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:var(--w);margin:0 auto;padding:18px 15px 190px}
+  header.top{padding:2px 2px 4px}
+  h1{margin:0 0 6px;font-size:25px;line-height:1.35;letter-spacing:.2px}
+  .lede{margin:0;color:var(--ink2);font-size:14.5px}
+  .badges{margin-top:10px;display:flex;flex-wrap:wrap;gap:7px}
+  .badge{font-size:12px;padding:3px 9px;border-radius:999px;background:#fff;border:1px solid var(--line2);color:var(--ink2)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:15px;margin:13px 0 0;box-shadow:0 1px 2px rgba(40,26,20,.04)}
+  .card > h2{margin:0 0 4px;font-size:17px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .card > h2 .step{font-size:12px;font-weight:700;color:#fff;background:var(--brand);border-radius:999px;padding:2px 9px;white-space:nowrap}
+  .card > .hint{margin:0 0 12px;color:var(--ink2);font-size:13.5px}
+  h3.sec{margin:16px 0 6px;font-size:14px;color:var(--ink2);letter-spacing:.3px;display:flex;align-items:center;gap:8px}
+  h3.sec .tag{font-size:11.5px;font-weight:400;color:var(--ink3)}
+  .field{margin-bottom:11px}
+  .field label{display:block;font-size:13px;color:var(--ink2);margin-bottom:4px}
+  .field label .sub{color:var(--ink3);font-size:12px}
+  .field .unit{color:var(--ink3);font-size:12px;margin-left:6px}
+  input[type=text],select{width:100%;padding:9px 11px;border:1px solid var(--line2);border-radius:9px;font-size:14.5px;background:#fff;color:var(--ink);font-variant-numeric:tabular-nums}
+  input[type=text]:focus,select:focus{outline:2px solid #eacfa8;border-color:var(--brand)}
+  input.bad,select.bad{border-color:var(--bad);background:var(--badbg)}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13.5px;font-variant-numeric:tabular-nums}
+  .btns{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 0}
+  button{font:inherit;font-size:13px;padding:8px 12px;border-radius:9px;border:1px solid var(--line2);background:#fff;color:var(--ink);cursor:pointer}
+  button:hover{background:#faf8f4}
+  button.pri{background:var(--brand);border-color:var(--brand);color:#fff}
+  button.pri:hover{background:#854c0d}
+  button.sm{font-size:12px;padding:5px 9px}
+  .chips{display:flex;flex-wrap:wrap;gap:7px}
+  .chip{font-size:12.5px;padding:6px 11px;border-radius:999px;border:1px solid var(--line2);background:#fff;cursor:pointer}
+  .chip[aria-pressed=true]{background:var(--brand2);border-color:var(--brand);color:#6f3f07;font-weight:600}
+  /* 决策树：一行一问 */
+  .q{border-top:1px dashed var(--line2);padding:11px 0 2px}
+  .q:first-of-type{border-top:0;padding-top:2px}
+  .q .qt{font-size:14px;font-weight:600;margin-bottom:8px}
+  .q .qt em{font-style:normal;color:var(--ink3);font-weight:400;font-size:12.5px;margin-left:6px}
+  /* 结果 */
+  .verdict{border-left:5px solid var(--brand);background:var(--brand2);border-radius:10px;padding:13px 14px}
+  .verdict h3{margin:0 0 4px;font-size:19px;line-height:1.45}
+  .verdict p{margin:0;color:var(--ink2);font-size:13.5px}
+  .ins{margin:12px 0 0;padding:0;list-style:none}
+  .ins li{padding:10px 0;border-top:1px dashed var(--line2)}
+  .ins li:first-child{border-top:0;padding-top:4px}
+  .ins b{display:block;font-size:15px;margin-bottom:3px}
+  .ins span{color:var(--ink2);font-size:13.5px}
+  .tblwrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th,td{text-align:left;padding:8px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-size:12.5px;color:var(--ink2);font-weight:600;background:#fbfaf8;white-space:nowrap}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  tfoot td{font-weight:700;border-top:2px solid var(--line2);border-bottom:0}
+  .buy{list-style:none;margin:0;padding:0}
+  .buy li{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px dashed var(--line2)}
+  .buy li:first-child{border-top:0}
+  .buy input[type=checkbox]{margin-top:4px;width:17px;height:17px;flex:none;accent-color:var(--brand)}
+  .buy .bn{font-weight:600;font-size:14.5px}
+  .buy .bd{color:var(--ink2);font-size:13px}
+  .buy .bc{margin-left:auto;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .buy li.done .bn,.buy li.done .bd{text-decoration:line-through;color:var(--ink3)}
+  .ev{margin:0;padding:0;list-style:none}
+  .ev li{padding:9px 0;border-top:1px dashed var(--line2);font-size:13.5px}
+  .ev li:first-child{border-top:0}
+  .ev b{color:var(--ink)}
+  .sc{display:flex;flex-wrap:wrap;gap:7px}
+  .sc button{font-size:12.5px;padding:6px 11px;border-radius:999px}
+  .sc button[aria-pressed=true]{background:var(--brand2);border-color:var(--brand);font-weight:600}
+  .chk{font-size:13px}
+  .chk .ok{color:var(--good)}
+  .chk .no{color:var(--bad);font-weight:700}
+  .adv{border:1px solid var(--line2);border-radius:10px;padding:11px 12px;margin:9px 0 0;background:#fffdf9}
+  .adv b{display:block;font-size:14.5px;margin-bottom:3px}
+  .adv p{margin:0 0 8px;color:var(--ink2);font-size:13px}
+  .note{background:var(--graybg);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--ink2);margin:10px 0 0}
+  .err{background:var(--badbg);border:1px solid #f0c4c0;color:#7d1a12;border-radius:10px;padding:11px 13px;margin:12px 0 0;font-size:13.5px}
+  .err ul{margin:6px 0 0;padding-left:18px}
+  .warnbox{background:var(--warnbg);border-radius:10px;padding:10px 12px;font-size:13px;color:#71470a;margin:10px 0 0}
+  .warnbox ul{margin:5px 0 0;padding-left:18px}
+  details.more{margin-top:12px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff}
+  details.more > summary{cursor:pointer;font-size:13.5px;color:var(--ink2)}
+  details.more ul{margin:9px 0 0;padding-left:19px;font-size:13px;color:var(--ink2)}
+  details.more li{margin-bottom:5px}
+  .foot{color:var(--ink3);font-size:12.5px;margin:14px 2px 0;line-height:1.7}
+  .hidden{display:none !important}
+  /* 底部常驻条 */
+  .dock{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.97);border-top:1px solid var(--line2);backdrop-filter:blur(6px);z-index:9}
+  .dock .in{max-width:var(--w);margin:0 auto;padding:9px 15px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .dock .m{line-height:1.25}
+  .dock .m b{display:block;font-size:16px;font-variant-numeric:tabular-nums}
+  .dock .m i{font-style:normal;font-size:11.5px;color:var(--ink3)}
+  .dock .sp{flex:1 1 12px}
+  .dock .btns{margin:0}
+  /* 窄屏：表格折成堆叠卡，结论列必须留在第一屏 */
+  @media (max-width:640px){
+    .wrap{padding:14px 12px 200px}
+    h1{font-size:21px}
+    .row2,.row3{grid-template-columns:1fr}
+    table.flat thead{display:none}
+    table.flat tr{display:block;border:1px solid var(--line);border-radius:10px;padding:9px 10px;margin-bottom:9px;background:#fff}
+    table.flat td{display:block;border:0;padding:2px 0;text-align:left;white-space:normal}
+    table.flat td::before{content:attr(data-c) "：";color:var(--ink3);font-size:12px}
+    table.flat td.num{text-align:left}
+    table.flat tfoot tr{border:0;background:transparent}
+    .dock .m b{font-size:15px}
+    .dock .btns button{font-size:12px;padding:7px 9px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>买多了退不掉</h1>
+    <p class="lede">装修买料之前先算「到底买多少件」。瓷砖不是按面积除以砖面积就完事——边上一圈要切，切剩的那条能不能挪去别处，直接决定你多买几块。地板只能整箱买、乳胶漆只能整桶买、美缝按管买，这里把它们一起摊平。</p>
+    <div class="badges">
+      <span class="badge">不联网 · 不查行情价</span>
+      <span class="badge">数字只存在你自己的浏览器里</span>
+      <span class="badge">默认场景是虚构示例</span>
+      <span class="badge">四种导出 · 刷新不丢</span>
+    </div>
+  </header>
+
+  <!-- ═══ 1 决策树：先问怎么铺 ═══ -->
+  <section class="card">
+    <h2><span class="step">1</span>先回答几个问题，下面的输入框会跟着变</h2>
+    <p class="hint">不用全填。只算你真正要买的那几样。</p>
+
+    <div class="q">
+      <div class="qt">地面铺什么？<em>只会算其中一种</em></div>
+      <div class="chips" id="q-floor">
+        <button type="button" class="chip" data-k="floorKind" data-v="tile" aria-pressed="true">铺瓷砖</button>
+        <button type="button" class="chip" data-k="floorKind" data-v="plank" aria-pressed="false">铺木地板</button>
+        <button type="button" class="chip" data-k="floorKind" data-v="none" aria-pressed="false">地面先不铺</button>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qt">墙面还要贴砖吗？<em>厨房、卫生间的墙砖</em></div>
+      <div class="chips" id="q-walltile">
+        <button type="button" class="chip" data-k="hasWallTile" data-v="1" aria-pressed="false">要贴墙砖</button>
+        <button type="button" class="chip" data-k="hasWallTile" data-v="0" aria-pressed="true">不贴</button>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qt">要刷墙吗？<em>乳胶漆 + 腻子 + 界面剂</em></div>
+      <div class="chips" id="q-paint">
+        <button type="button" class="chip" data-k="hasPaint" data-v="1" aria-pressed="true">要刷</button>
+        <button type="button" class="chip" data-k="hasPaint" data-v="0" aria-pressed="false">不刷</button>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qt">还要买别的吗？<em>可多选</em></div>
+      <div class="chips" id="q-extras">
+        <button type="button" class="chip" data-k="hasBase" data-v="1" aria-pressed="true">踢脚线</button>
+        <button type="button" class="chip" data-k="hasGrout" data-v="1" aria-pressed="true">美缝剂</button>
+      </div>
+    </div>
+
+    <h3 class="sec">先跑一个场景看看 <span class="tag">都是虚构示例</span></h3>
+    <div class="sc" id="scenarios"></div>
+  </section>
+
+  <!-- ═══ 2 房间尺寸 ═══ -->
+  <section class="card">
+    <h2><span class="step">2</span>房间尺寸</h2>
+    <p class="hint">长、宽、层高按「米」填（也可以切到厘米/毫米）。规格类字段一律按「毫米」填，别把厘米当毫米。</p>
+    <div class="row2">
+      <div class="field"><label for="f-label">这套房间叫什么 <span class="sub">只用于显示与导出</span></label><input type="text" id="f-label" data-k="label"></div>
+      <div class="field"><label for="f-unit">尺寸单位</label>
+        <select id="f-unit" data-k="unit">
+          <option value="m">米 (m)</option><option value="cm">厘米 (cm)</option><option value="mm">毫米 (mm)</option>
+        </select>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field"><label for="f-roomL">房间长 <span class="unit" data-unitlen>米</span></label><input type="text" id="f-roomL" data-k="roomL" inputmode="decimal"></div>
+      <div class="field"><label for="f-roomW">房间宽 <span class="unit" data-unitlen>米</span></label><input type="text" id="f-roomW" data-k="roomW" inputmode="decimal"></div>
+    </div>
+    <div class="row3">
+      <div class="field"><label for="f-perimeter">墙面周长 <span class="unit" data-unitlen>米</span></label><input type="text" id="f-perimeter" data-k="perimeter" inputmode="decimal"></div>
+      <div class="field"><label for="f-height">层高 <span class="unit" data-unitlen>米</span></label><input type="text" id="f-height" data-k="height" inputmode="decimal"></div>
+      <div class="field"><label for="f-door">门洞面积 <span class="unit" data-unitarea>m²</span></label><input type="text" id="f-door" data-k="door" inputmode="decimal"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label for="f-window">窗洞面积 <span class="unit" data-unitarea>m²</span></label><input type="text" id="f-window" data-k="window" inputmode="decimal"></div>
+      <div class="field"><label for="f-doorWidth">门洞宽度合计 <span class="unit">米</span> <span class="sub">踢脚线要扣掉</span></label><input type="text" id="f-doorWidth" data-k="doorWidth" inputmode="decimal"></div>
+    </div>
+  </section>
+
+  <!-- ═══ 3 规格与单价 ═══ -->
+  <section class="card">
+    <h2><span class="step">3</span>规格、单价与包装</h2>
+    <p class="hint">单价是为了把「买多了」折成钱，随便填也行；不填就把省下的钱看成 0。</p>
+
+    <div id="sec-ftile">
+      <h3 class="sec">地面砖 <span class="tag">按块买</span></h3>
+      <div class="row3">
+        <div class="field"><label for="f-tileL">砖长 <span class="unit">mm</span></label><input type="text" id="f-tileL" data-k="tileL" inputmode="decimal"></div>
+        <div class="field"><label for="f-tileW">砖宽 <span class="unit">mm</span></label><input type="text" id="f-tileW" data-k="tileW" inputmode="decimal"></div>
+        <div class="field"><label for="f-joint">缝隙宽 <span class="unit">mm</span> <span class="sub">连着美缝一起用</span></label><input type="text" id="f-joint" data-k="joint" inputmode="decimal"></div>
+      </div>
+      <div class="row3">
+        <div class="field"><label for="f-tilePrice">单价 <span class="unit">元/块</span></label><input type="text" id="f-tilePrice" data-k="tilePrice" inputmode="decimal"></div>
+        <div class="field"><label for="f-reservePct">备用量 <span class="unit">%</span></label><input type="text" id="f-reservePct" data-k="reservePct" inputmode="decimal"></div>
+        <div class="field"><label for="f-minReuse">边角料复用阈值 <span class="unit">mm</span> <span class="sub">比它窄就整块丢掉</span></label><input type="text" id="f-minReuse" data-k="minReuse" inputmode="decimal"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label for="f-layPrice">铺贴人工辅料 <span class="unit">元/m²</span></label><input type="text" id="f-layPrice" data-k="layPrice" inputmode="decimal"></div>
+        <div class="field"><label for="f-layLong">砖的长边对着哪个方向</label>
+          <select id="f-layLong" data-k="layLong"><option value="1">沿房间长边</option><option value="0">沿房间短边</option></select>
+        </div>
+      </div>
+    </div>
+
+    <div id="sec-plank" class="hidden">
+      <h3 class="sec">木地板 <span class="tag">按箱买</span></h3>
+      <div class="row3">
+        <div class="field"><label for="f-plankL">板长 <span class="unit">mm</span></label><input type="text" id="f-plankL" data-k="plankL" inputmode="decimal"></div>
+        <div class="field"><label for="f-plankW">板宽 <span class="unit">mm</span></label><input type="text" id="f-plankW" data-k="plankW" inputmode="decimal"></div>
+        <div class="field"><label for="f-perBox">每箱片数 <span class="unit">片</span></label><input type="text" id="f-perBox" data-k="perBox" inputmode="decimal"></div>
+      </div>
+      <div class="row3">
+        <div class="field"><label for="f-m2PerPiece">每片面积 <span class="unit">m²</span> <span class="sub">与长×宽差 5% 以上会报错</span></label><input type="text" id="f-m2PerPiece" data-k="m2PerPiece" inputmode="decimal"></div>
+        <div class="field"><label for="f-plankPrice">单价 <span class="unit">元/m²</span></label><input type="text" id="f-plankPrice" data-k="plankPrice" inputmode="decimal"></div>
+        <div class="field"><label for="f-allowPct">余量 <span class="unit">%</span> <span class="sub">对付最后一行切边</span></label><input type="text" id="f-allowPct" data-k="allowPct" inputmode="decimal"></div>
+      </div>
+    </div>
+
+    <div id="sec-wtile" class="hidden">
+      <h3 class="sec">墙砖 <span class="tag">按块买</span></h3>
+      <div class="row3">
+        <div class="field"><label for="f-wtileL">墙砖长 <span class="unit">mm</span></label><input type="text" id="f-wtileL" data-k="wtileL" inputmode="decimal"></div>
+        <div class="field"><label for="f-wtileW">墙砖宽 <span class="unit">mm</span></label><input type="text" id="f-wtileW" data-k="wtileW" inputmode="decimal"></div>
+        <div class="field"><label for="f-wtilePrice">单价 <span class="unit">元/块</span></label><input type="text" id="f-wtilePrice" data-k="wtilePrice" inputmode="decimal"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label for="f-wtileLayPrice">铺贴人工辅料 <span class="unit">元/m²</span></label><input type="text" id="f-wtileLayPrice" data-k="wtileLayPrice" inputmode="decimal"></div>
+        <div class="field"><label for="f-wtileReservePct">备用量 <span class="unit">%</span> <span class="sub">墙砖要开孔，一般留更多</span></label><input type="text" id="f-wtileReservePct" data-k="wtileReservePct" inputmode="decimal"></div>
+      </div>
+    </div>
+
+    <div id="sec-paint" class="hidden">
+      <h3 class="sec">刷墙三件套 <span class="tag">乳胶漆按桶、粉料按包</span></h3>
+      <div class="row3">
+        <div class="field"><label for="f-paintCoverage">乳胶漆：每遍每升刷多少 <span class="unit">m²</span></label><input type="text" id="f-paintCoverage" data-k="paintCoverage" inputmode="decimal"></div>
+        <div class="field"><label for="f-coats">刷几遍 <span class="unit">遍</span></label><input type="text" id="f-coats" data-k="coats" inputmode="decimal"></div>
+        <div class="field"><label for="f-paintPackL">每桶 <span class="unit">L</span></label><input type="text" id="f-paintPackL" data-k="paintPackL" inputmode="decimal"></div>
+      </div>
+      <div class="row3">
+        <div class="field"><label for="f-paintPrice">乳胶漆单价 <span class="unit">元/桶</span></label><input type="text" id="f-paintPrice" data-k="paintPrice" inputmode="decimal"></div>
+        <div class="field"><label for="f-puttyKgPerM2">腻子 <span class="unit">kg/m²</span> <span class="sub">整个工序合计</span></label><input type="text" id="f-puttyKgPerM2" data-k="puttyKgPerM2" inputmode="decimal"></div>
+        <div class="field"><label for="f-puttyPackKg">每包腻子 <span class="unit">kg</span></label><input type="text" id="f-puttyPackKg" data-k="puttyPackKg" inputmode="decimal"></div>
+      </div>
+      <div class="row3">
+        <div class="field"><label for="f-puttyPrice">腻子单价 <span class="unit">元/包</span></label><input type="text" id="f-puttyPrice" data-k="puttyPrice" inputmode="decimal"></div>
+        <div class="field"><label for="f-primerKgPerM2">界面剂 <span class="unit">kg/m²</span></label><input type="text" id="f-primerKgPerM2" data-k="primerKgPerM2" inputmode="decimal"></div>
+        <div class="field"><label for="f-primerPackKg">每包界面剂 <span class="unit">kg</span></label><input type="text" id="f-primerPackKg" data-k="primerPackKg" inputmode="decimal"></div>
+      </div>
+      <div class="row3">
+        <div class="field"><label for="f-primerPrice">界面剂单价 <span class="unit">元/包</span></label><input type="text" id="f-primerPrice" data-k="primerPrice" inputmode="decimal"></div>
+        <div class="field"><label for="f-useFactor">可使用系数 <span class="unit">%</span> <span class="sub">柜子、门窗套挡掉的部分</span></label><input type="text" id="f-useFactor" data-k="useFactor" inputmode="decimal"></div>
+        <div class="field"><label for="f-ceilingArea">天花板面积 <span class="unit" data-unitarea>m²</span></label><input type="text" id="f-ceilingArea" data-k="ceilingArea" inputmode="decimal"></div>
+      </div>
+      <div class="chips">
+        <button type="button" class="chip" id="q-ceiling" data-k="ceilingOn" data-v="1" aria-pressed="true">天花板也刷</button>
+      </div>
+    </div>
+
+    <div id="sec-base" class="hidden">
+      <h3 class="sec">踢脚线 <span class="tag">按根买</span></h3>
+      <div class="row3">
+        <div class="field"><label for="f-baseH">高度 <span class="unit">mm</span></label><input type="text" id="f-baseH" data-k="baseH" inputmode="decimal"></div>
+        <div class="field"><label for="f-baseLen">每根长度 <span class="unit">米</span></label><input type="text" id="f-baseLen" data-k="baseLen" inputmode="decimal"></div>
+        <div class="field"><label for="f-basePrice">单价 <span class="unit">元/根</span></label><input type="text" id="f-basePrice" data-k="basePrice" inputmode="decimal"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label for="f-baseAllowPct">余量 <span class="unit">%</span> <span class="sub">阴阳角要裁切</span></label><input type="text" id="f-baseAllowPct" data-k="baseAllowPct" inputmode="decimal"></div>
+        <div class="field"><label>要不要拿瓷砖边角料加工</label>
+          <div class="chips"><button type="button" class="chip" id="q-offcut" data-k="baseFromOffcut" data-v="1" aria-pressed="false">想用边角料</button></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="sec-grout" class="hidden">
+      <h3 class="sec">美缝剂 <span class="tag">按管买</span></h3>
+      <div class="row2">
+        <div class="field"><label for="f-groutPerTube">每管能打多少米 <span class="unit">米/管</span></label><input type="text" id="f-groutPerTube" data-k="groutPerTube" inputmode="decimal"></div>
+        <div class="field"><label for="f-groutPrice">单价 <span class="unit">元/管</span></label><input type="text" id="f-groutPrice" data-k="groutPrice" inputmode="decimal"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label for="f-groutAllowPct">余量 <span class="unit">%</span></label><input type="text" id="f-groutAllowPct" data-k="groutAllowPct" inputmode="decimal"></div>
+        <div class="field"><label>墙面砖缝</label>
+          <div class="chips"><button type="button" class="chip" id="q-groutwall" data-k="groutWallOn" data-v="1" aria-pressed="true">墙面也要美缝</button></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="btns">
+      <button type="button" id="btn-reset">恢复默认值</button>
+      <button type="button" id="btn-save" class="pri">保存到本机</button>
+    </div>
+  </section>
+
+  <!-- ═══ 4 结果 ═══ -->
+  <section class="card" id="res-card">
+    <h2><span class="step">4</span>要买多少</h2>
+    <div id="err-box" class="err hidden"></div>
+    <div id="warn-box" class="warnbox hidden"></div>
+
+    <div id="res-body">
+      <div class="verdict"><h3 id="v-title">—</h3><p id="v-sub">—</p></div>
+
+      <h3 class="sec">最要紧的几条</h3>
+      <ul class="ins" id="ins-list"></ul>
+
+      <h3 class="sec">采购清单 <span class="tag">照着买，点一下划掉</span></h3>
+      <div class="tblwrap">
+        <table class="flat" id="tbl-buy">
+          <thead><tr>
+            <th>材料</th><th>规格 / 口径</th><th class="num">理论用量</th><th class="num">建议购买</th>
+            <th class="num">多买几成</th><th class="num">切没了</th><th class="num">单价</th><th class="num">小计</th>
+          </tr></thead>
+          <tbody></tbody>
+          <tfoot><tr><td colspan="7">材料合计</td><td class="num" id="tf-material">—</td></tr></tfoot>
+        </table>
+      </div>
+
+      <h3 class="sec">本单要买的东西 <span class="tag">可勾选，勾了会记住</span></h3>
+      <ul class="buy" id="buy-list"></ul>
+
+      <h3 class="sec">损耗和余量是从哪来的 <span class="tag">每个数都能追到上面的算式</span></h3>
+      <ul class="ev" id="ev-list"></ul>
+
+      <h3 class="sec">合计</h3>
+      <div class="tblwrap">
+        <table class="flat" id="tbl-totals">
+          <thead><tr><th>项</th><th class="num">金额（元）</th><th>说明</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <h3 class="sec">可以试试这么改 <span class="tag">点「采用」直接改输入并重算</span></h3>
+      <div id="adv-list"></div>
+
+      <h3 class="sec">算式自检 <span class="tag">结构恒等式，任何输入下都该成立</span></h3>
+      <div class="chk" id="chk-list"></div>
+
+      <h3 class="sec">每一步怎么来的</h3>
+      <div class="tblwrap">
+        <table class="flat" id="tbl-steps">
+          <thead><tr><th>材料</th><th>算式</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <details class="more">
+      <summary>这个页面不算什么（点开看边界）</summary>
+      <ul>
+        <li>铺贴按<b>规则矩形网格</b>算：不支持菱形铺、人字拼、斜铺、六角砖、拼花、波导线、过门石单独算料；门窗洞口在墙上的位置也不建模。</li>
+        <li>边角料能不能复用，只看「切剩的宽度够不够你设的阈值」，不建模<b>花纹对花、色号批次、倒角磨边</b>。</li>
+        <li>包装只能<b>整件买</b>：整块砖、整箱地板、整桶漆、整包粉、整根踢脚线、整管美缝。</li>
+        <li><b>不做</b>水泥、沙子、砖块、防水、水电改造的用量（需要现场路由或真实配比规范，本页没有内置规则表）。</li>
+        <li><b>不做</b>壁纸/壁布用量（和瓷砖地板同型，本页不重复覆盖）。</li>
+        <li>乳胶漆覆盖率、腻子 3.5 kg/m²、可使用系数 85%、边角料阈值 100 mm 这些<b>都是本页的设计取值，不是标准、不是厂商数据</b>；实际以下单页面的参数为准。</li>
+        <li>「多买几成」与「切没了」的分母不同（前者除以用掉的、后者除以买回来的），页面分两列显示，不是同一个数。</li>
+        <li>全部是<b>估算</b>；不联网、不查任何真实行情价、不评价任何品牌与商家、不给采购渠道建议。</li>
+        <li>默认值与所有内置场景<b>都是虚构示例</b>，不是真实订单。</li>
+      </ul>
+    </details>
+  </section>
+
+  <p class="foot"><b>关于数据</b>：默认值与内置场景全部是虚构示例，只用来演示算法；你填的数字只存在你自己的浏览器里（localStorage），导出的文件也只落在你本机。本页不联网。</p>
+</div>
+
+<!-- ═══════ 底部常驻读数条 + 导出 ═══════ -->
+<div class="dock">
+  <div class="in">
+    <div class="m"><b id="d-count">—</b><i>要买的样数</i></div>
+    <div class="m"><b id="d-money">—</b><i>材料合计（元）</i></div>
+    <div class="m"><b id="d-perm2">—</b><i>每平米（元）</i></div>
+    <div class="sp"></div>
+    <div class="btns">
+      <button type="button" id="btn-csv">导出 CSV</button>
+      <button type="button" id="btn-md">导出 Markdown</button>
+      <button type="button" id="btn-png">导出结果卡 PNG</button>
+      <button type="button" id="btn-json">导出 JSON 备份</button>
+      <button type="button" id="btn-import">从 JSON 恢复</button>
+      <input type="file" id="file-import" accept=".json,application/json" class="hidden">
+    </div>
+  </div>
+</div>
+
+<script>/*CORE*/</script>
+<script>/*UI*/</script>
+</body>
+</html>

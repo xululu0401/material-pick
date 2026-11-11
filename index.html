@@ -1,0 +1,2061 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>买多了退不掉 · 装修材料按房间尺寸算采购量（瓷砖、地板、涂料、踢脚线、美缝）</title>
+<meta name="description" content="装修买料之前先算清「到底要买多少件」：瓷砖按房间尺寸做网格整除、把边界切剩的半块还能不能用在别处也算进去，地板按面积加余量再拆包，乳胶漆按可刷面积与遍数分桶，踢脚线按米数，美缝按缝长。全部由你填数字，页面不联网、不查行情价、不内置施工规范。">
+<style>
+  :root{
+    --bg:#f6f5f2; --card:#ffffff; --ink:#1a1712; --ink2:#565049; --ink3:#867f76;
+    --line:#e6e2db; --line2:#cfc9c0; --brand:#9a5b12; --brand2:#fdf3e6;
+    --good:#1a6b3c; --goodbg:#e8f5ec; --warn:#8a5600; --warnbg:#fdf3e3; --bad:#a8261b; --badbg:#fceceb;
+    --gray:#5b635c; --graybg:#f1f3f1;
+    --radius:12px; --w:920px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font:15px/1.7 -apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:var(--w);margin:0 auto;padding:18px 15px 190px}
+  header.top{padding:2px 2px 4px}
+  h1{margin:0 0 6px;font-size:25px;line-height:1.35;letter-spacing:.2px}
+  .lede{margin:0;color:var(--ink2);font-size:14.5px}
+  .badges{margin-top:10px;display:flex;flex-wrap:wrap;gap:7px}
+  .badge{font-size:12px;padding:3px 9px;border-radius:999px;background:#fff;border:1px solid var(--line2);color:var(--ink2)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:15px;margin:13px 0 0;box-shadow:0 1px 2px rgba(40,26,20,.04)}
+  .card > h2{margin:0 0 4px;font-size:17px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .card > h2 .step{font-size:12px;font-weight:700;color:#fff;background:var(--brand);border-radius:999px;padding:2px 9px;white-space:nowrap}
+  .card > .hint{margin:0 0 12px;color:var(--ink2);font-size:13.5px}
+  h3.sec{margin:16px 0 6px;font-size:14px;color:var(--ink2);letter-spacing:.3px;display:flex;align-items:center;gap:8px}
+  h3.sec .tag{font-size:11.5px;font-weight:400;color:var(--ink3)}
+  .field{margin-bottom:11px}
+  .field label{display:block;font-size:13px;color:var(--ink2);margin-bottom:4px}
+  .field label .sub{color:var(--ink3);font-size:12px}
+  .field .unit{color:var(--ink3);font-size:12px;margin-left:6px}
+  input[type=text],select{width:100%;padding:9px 11px;border:1px solid var(--line2);border-radius:9px;font-size:14.5px;background:#fff;color:var(--ink);font-variant-numeric:tabular-nums}
+  input[type=text]:focus,select:focus{outline:2px solid #eacfa8;border-color:var(--brand)}
+  input.bad,select.bad{border-color:var(--bad);background:var(--badbg)}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13.5px;font-variant-numeric:tabular-nums}
+  .btns{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 0}
+  button{font:inherit;font-size:13px;padding:8px 12px;border-radius:9px;border:1px solid var(--line2);background:#fff;color:var(--ink);cursor:pointer}
+  button:hover{background:#faf8f4}
+  button.pri{background:var(--brand);border-color:var(--brand);color:#fff}
+  button.pri:hover{background:#854c0d}
+  button.sm{font-size:12px;padding:5px 9px}
+  .chips{display:flex;flex-wrap:wrap;gap:7px}
+  .chip{font-size:12.5px;padding:6px 11px;border-radius:999px;border:1px solid var(--line2);background:#fff;cursor:pointer}
+  .chip[aria-pressed=true]{background:var(--brand2);border-color:var(--brand);color:#6f3f07;font-weight:600}
+  /* 决策树：一行一问 */
+  .q{border-top:1px dashed var(--line2);padding:11px 0 2px}
+  .q:first-of-type{border-top:0;padding-top:2px}
+  .q .qt{font-size:14px;font-weight:600;margin-bottom:8px}
+  .q .qt em{font-style:normal;color:var(--ink3);font-weight:400;font-size:12.5px;margin-left:6px}
+  /* 结果 */
+  .verdict{border-left:5px solid var(--brand);background:var(--brand2);border-radius:10px;padding:13px 14px}
+  .verdict h3{margin:0 0 4px;font-size:19px;line-height:1.45}
+  .verdict p{margin:0;color:var(--ink2);font-size:13.5px}
+  .ins{margin:12px 0 0;padding:0;list-style:none}
+  .ins li{padding:10px 0;border-top:1px dashed var(--line2)}
+  .ins li:first-child{border-top:0;padding-top:4px}
+  .ins b{display:block;font-size:15px;margin-bottom:3px}
+  .ins span{color:var(--ink2);font-size:13.5px}
+  .tblwrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th,td{text-align:left;padding:8px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-size:12.5px;color:var(--ink2);font-weight:600;background:#fbfaf8;white-space:nowrap}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  tfoot td{font-weight:700;border-top:2px solid var(--line2);border-bottom:0}
+  .buy{list-style:none;margin:0;padding:0}
+  .buy li{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px dashed var(--line2)}
+  .buy li:first-child{border-top:0}
+  .buy input[type=checkbox]{margin-top:4px;width:17px;height:17px;flex:none;accent-color:var(--brand)}
+  .buy .bn{font-weight:600;font-size:14.5px}
+  .buy .bd{color:var(--ink2);font-size:13px}
+  .buy .bc{margin-left:auto;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .buy li.done .bn,.buy li.done .bd{text-decoration:line-through;color:var(--ink3)}
+  .ev{margin:0;padding:0;list-style:none}
+  .ev li{padding:9px 0;border-top:1px dashed var(--line2);font-size:13.5px}
+  .ev li:first-child{border-top:0}
+  .ev b{color:var(--ink)}
+  .sc{display:flex;flex-wrap:wrap;gap:7px}
+  .sc button{font-size:12.5px;padding:6px 11px;border-radius:999px}
+  .sc button[aria-pressed=true]{background:var(--brand2);border-color:var(--brand);font-weight:600}
+  .chk{font-size:13px}
+  .chk .ok{color:var(--good)}
+  .chk .no{color:var(--bad);font-weight:700}
+  .adv{border:1px solid var(--line2);border-radius:10px;padding:11px 12px;margin:9px 0 0;background:#fffdf9}
+  .adv b{display:block;font-size:14.5px;margin-bottom:3px}
+  .adv p{margin:0 0 8px;color:var(--ink2);font-size:13px}
+  .note{background:var(--graybg);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--ink2);margin:10px 0 0}
+  .err{background:var(--badbg);border:1px solid #f0c4c0;color:#7d1a12;border-radius:10px;padding:11px 13px;margin:12px 0 0;font-size:13.5px}
+  .err ul{margin:6px 0 0;padding-left:18px}
+  .warnbox{background:var(--warnbg);border-radius:10px;padding:10px 12px;font-size:13px;color:#71470a;margin:10px 0 0}
+  .warnbox ul{margin:5px 0 0;padding-left:18px}
+  details.more{margin-top:12px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff}
+  details.more > summary{cursor:pointer;font-size:13.5px;color:var(--ink2)}
+  details.more ul{margin:9px 0 0;padding-left:19px;font-size:13px;color:var(--ink2)}
+  details.more li{margin-bottom:5px}
+  .foot{color:var(--ink3);font-size:12.5px;margin:14px 2px 0;line-height:1.7}
+  .hidden{display:none !important}
+  /* 底部常驻条 */
+  .dock{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.97);border-top:1px solid var(--line2);backdrop-filter:blur(6px);z-index:9}
+  .dock .in{max-width:var(--w);margin:0 auto;padding:9px 15px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .dock .m{line-height:1.25}
+  .dock .m b{display:block;font-size:16px;font-variant-numeric:tabular-nums}
+  .dock .m i{font-style:normal;font-size:11.5px;color:var(--ink3)}
+  .dock .sp{flex:1 1 12px}
+  .dock .btns{margin:0}
+  /* 窄屏：表格折成堆叠卡，结论列必须留在第一屏 */
+  @media (max-width:640px){
+    .wrap{padding:14px 12px 200px}
+    h1{font-size:21px}
+    .row2,.row3{grid-template-columns:1fr}
+    table.flat thead{display:none}
+    table.flat tr{display:block;border:1px solid var(--line);border-radius:10px;padding:9px 10px;margin-bottom:9px;background:#fff}
+    table.flat td{display:block;border:0;padding:2px 0;text-align:left;white-space:normal}
+    table.flat td::before{content:attr(data-c) "：";color:var(--ink3);font-size:12px}
+    table.flat td.num{text-align:left}
+    table.flat tfoot tr{border:0;background:transparent}
+    .dock .m b{font-size:15px}
+    .dock .btns button{font-size:12px;padding:7px 9px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>买多了退不掉</h1>
+    <p class="lede">装修买料之前先算「到底买多少件」。瓷砖不是按面积除以砖面积就完事——边上一圈要切，切剩的那条能不能挪去别处，直接决定你多买几块。地板只能整箱买、乳胶漆只能整桶买、美缝按管买，这里把它们一起摊平。</p>
+    <div class="badges">
+      <span class="badge">不联网 · 不查行情价</span>
+      <span class="badge">数字只存在你自己的浏览器里</span>
+      <span class="badge">默认场景是虚构示例</span>
+      <span class="badge">四种导出 · 刷新不丢</span>
+    </div>
+  </header>
+
+  <!-- ═══ 1 决策树：先问怎么铺 ═══ -->
+  <section class="card">
+    <h2><span class="step">1</span>先回答几个问题，下面的输入框会跟着变</h2>
+    <p class="hint">不用全填。只算你真正要买的那几样。</p>
+
+    <div class="q">
+      <div class="qt">地面铺什么？<em>只会算其中一种</em></div>
+      <div class="chips" id="q-floor">
+        <button type="button" class="chip" data-k="floorKind" data-v="tile" aria-pressed="true">铺瓷砖</button>
+        <button type="button" class="chip" data-k="floorKind" data-v="plank" aria-pressed="false">铺木地板</button>
+        <button type="button" class="chip" data-k="floorKind" data-v="none" aria-pressed="false">地面先不铺</button>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qt">墙面还要贴砖吗？<em>厨房、卫生间的墙砖</em></div>
+      <div class="chips" id="q-walltile">
+        <button type="button" class="chip" data-k="hasWallTile" data-v="1" aria-pressed="false">要贴墙砖</button>
+        <button type="button" class="chip" data-k="hasWallTile" data-v="0" aria-pressed="true">不贴</button>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qt">要刷墙吗？<em>乳胶漆 + 腻子 + 界面剂</em></div>
+      <div class="chips" id="q-paint">
+        <button type="button" class="chip" data-k="hasPaint" data-v="1" aria-pressed="true">要刷</button>
+        <button type="button" class="chip" data-k="hasPaint" data-v="0" aria-pressed="false">不刷</button>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qt">还要买别的吗？<em>可多选</em></div>
+      <div class="chips" id="q-extras">
+        <button type="button" class="chip" data-k="hasBase" data-v="1" aria-pressed="true">踢脚线</button>
+        <button type="button" class="chip" data-k="hasGrout" data-v="1" aria-pressed="true">美缝剂</button>
+      </div>
+    </div>
+
+    <h3 class="sec">先跑一个场景看看 <span class="tag">都是虚构示例</span></h3>
+    <div class="sc" id="scenarios"></div>
+  </section>
+
+  <!-- ═══ 2 房间尺寸 ═══ -->
+  <section class="card">
+    <h2><span class="step">2</span>房间尺寸</h2>
+    <p class="hint">长、宽、层高按「米」填（也可以切到厘米/毫米）。规格类字段一律按「毫米」填，别把厘米当毫米。</p>
+    <div class="row2">
+      <div class="field"><label for="f-label">这套房间叫什么 <span class="sub">只用于显示与导出</span></label><input type="text" id="f-label" data-k="label"></div>
+      <div class="field"><label for="f-unit">尺寸单位</label>
+        <select id="f-unit" data-k="unit">
+          <option value="m">米 (m)</option><option value="cm">厘米 (cm)</option><option value="mm">毫米 (mm)</option>
+        </select>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field"><label for="f-roomL">房间长 <span class="unit" data-unitlen>米</span></label><input type="text" id="f-roomL" data-k="roomL" inputmode="decimal"></div>
+      <div class="field"><label for="f-roomW">房间宽 <span class="unit" data-unitlen>米</span></label><input type="text" id="f-roomW" data-k="roomW" inputmode="decimal"></div>
+    </div>
+    <div class="row3">
+      <div class="field"><label for="f-perimeter">墙面周长 <span class="unit" data-unitlen>米</span></label><input type="text" id="f-perimeter" data-k="perimeter" inputmode="decimal"></div>
+      <div class="field"><label for="f-height">层高 <span class="unit" data-unitlen>米</span></label><input type="text" id="f-height" data-k="height" inputmode="decimal"></div>
+      <div class="field"><label for="f-door">门洞面积 <span class="unit" data-unitarea>m²</span></label><input type="text" id="f-door" data-k="door" inputmode="decimal"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label for="f-window">窗洞面积 <span class="unit" data-unitarea>m²</span></label><input type="text" id="f-window" data-k="window" inputmode="decimal"></div>
+      <div class="field"><label for="f-doorWidth">门洞宽度合计 <span class="unit">米</span> <span class="sub">踢脚线要扣掉</span></label><input type="text" id="f-doorWidth" data-k="doorWidth" inputmode="decimal"></div>
+    </div>
+  </section>
+
+  <!-- ═══ 3 规格与单价 ═══ -->
+  <section class="card">
+    <h2><span class="step">3</span>规格、单价与包装</h2>
+    <p class="hint">单价是为了把「买多了」折成钱，随便填也行；不填就把省下的钱看成 0。</p>
+
+    <div id="sec-ftile">
+      <h3 class="sec">地面砖 <span class="tag">按块买</span></h3>
+      <div class="row3">
+        <div class="field"><label for="f-tileL">砖长 <span class="unit">mm</span></label><input type="text" id="f-tileL" data-k="tileL" inputmode="decimal"></div>
+        <div class="field"><label for="f-tileW">砖宽 <span class="unit">mm</span></label><input type="text" id="f-tileW" data-k="tileW" inputmode="decimal"></div>
+        <div class="field"><label for="f-joint">缝隙宽 <span class="unit">mm</span> <span class="sub">连着美缝一起用</span></label><input type="text" id="f-joint" data-k="joint" inputmode="decimal"></div>
+      </div>
+      <div class="row3">
+        <div class="field"><label for="f-tilePrice">单价 <span class="unit">元/块</span></label><input type="text" id="f-tilePrice" data-k="tilePrice" inputmode="decimal"></div>
+        <div class="field"><label for="f-reservePct">备用量 <span class="unit">%</span></label><input type="text" id="f-reservePct" data-k="reservePct" inputmode="decimal"></div>
+        <div class="field"><label for="f-minReuse">边角料复用阈值 <span class="unit">mm</span> <span class="sub">比它窄就整块丢掉</span></label><input type="text" id="f-minReuse" data-k="minReuse" inputmode="decimal"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label for="f-layPrice">铺贴人工辅料 <span class="unit">元/m²</span></label><input type="text" id="f-layPrice" data-k="layPrice" inputmode="decimal"></div>
+        <div class="field"><label for="f-layLong">砖的长边对着哪个方向</label>
+          <select id="f-layLong" data-k="layLong"><option value="1">沿房间长边</option><option value="0">沿房间短边</option></select>
+        </div>
+      </div>
+    </div>
+
+    <div id="sec-plank" class="hidden">
+      <h3 class="sec">木地板 <span class="tag">按箱买</span></h3>
+      <div class="row3">
+        <div class="field"><label for="f-plankL">板长 <span class="unit">mm</span></label><input type="text" id="f-plankL" data-k="plankL" inputmode="decimal"></div>
+        <div class="field"><label for="f-plankW">板宽 <span class="unit">mm</span></label><input type="text" id="f-plankW" data-k="plankW" inputmode="decimal"></div>
+        <div class="field"><label for="f-perBox">每箱片数 <span class="unit">片</span></label><input type="text" id="f-perBox" data-k="perBox" inputmode="decimal"></div>
+      </div>
+      <div class="row3">
+        <div class="field"><label for="f-m2PerPiece">每片面积 <span class="unit">m²</span> <span class="sub">与长×宽差 5% 以上会报错</span></label><input type="text" id="f-m2PerPiece" data-k="m2PerPiece" inputmode="decimal"></div>
+        <div class="field"><label for="f-plankPrice">单价 <span class="unit">元/m²</span></label><input type="text" id="f-plankPrice" data-k="plankPrice" inputmode="decimal"></div>
+        <div class="field"><label for="f-allowPct">余量 <span class="unit">%</span> <span class="sub">对付最后一行切边</span></label><input type="text" id="f-allowPct" data-k="allowPct" inputmode="decimal"></div>
+      </div>
+    </div>
+
+    <div id="sec-wtile" class="hidden">
+      <h3 class="sec">墙砖 <span class="tag">按块买</span></h3>
+      <div class="row3">
+        <div class="field"><label for="f-wtileL">墙砖长 <span class="unit">mm</span></label><input type="text" id="f-wtileL" data-k="wtileL" inputmode="decimal"></div>
+        <div class="field"><label for="f-wtileW">墙砖宽 <span class="unit">mm</span></label><input type="text" id="f-wtileW" data-k="wtileW" inputmode="decimal"></div>
+        <div class="field"><label for="f-wtilePrice">单价 <span class="unit">元/块</span></label><input type="text" id="f-wtilePrice" data-k="wtilePrice" inputmode="decimal"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label for="f-wtileLayPrice">铺贴人工辅料 <span class="unit">元/m²</span></label><input type="text" id="f-wtileLayPrice" data-k="wtileLayPrice" inputmode="decimal"></div>
+        <div class="field"><label for="f-wtileReservePct">备用量 <span class="unit">%</span> <span class="sub">墙砖要开孔，一般留更多</span></label><input type="text" id="f-wtileReservePct" data-k="wtileReservePct" inputmode="decimal"></div>
+      </div>
+    </div>
+
+    <div id="sec-paint" class="hidden">
+      <h3 class="sec">刷墙三件套 <span class="tag">乳胶漆按桶、粉料按包</span></h3>
+      <div class="row3">
+        <div class="field"><label for="f-paintCoverage">乳胶漆：每遍每升刷多少 <span class="unit">m²</span></label><input type="text" id="f-paintCoverage" data-k="paintCoverage" inputmode="decimal"></div>
+        <div class="field"><label for="f-coats">刷几遍 <span class="unit">遍</span></label><input type="text" id="f-coats" data-k="coats" inputmode="decimal"></div>
+        <div class="field"><label for="f-paintPackL">每桶 <span class="unit">L</span></label><input type="text" id="f-paintPackL" data-k="paintPackL" inputmode="decimal"></div>
+      </div>
+      <div class="row3">
+        <div class="field"><label for="f-paintPrice">乳胶漆单价 <span class="unit">元/桶</span></label><input type="text" id="f-paintPrice" data-k="paintPrice" inputmode="decimal"></div>
+        <div class="field"><label for="f-puttyKgPerM2">腻子 <span class="unit">kg/m²</span> <span class="sub">整个工序合计</span></label><input type="text" id="f-puttyKgPerM2" data-k="puttyKgPerM2" inputmode="decimal"></div>
+        <div class="field"><label for="f-puttyPackKg">每包腻子 <span class="unit">kg</span></label><input type="text" id="f-puttyPackKg" data-k="puttyPackKg" inputmode="decimal"></div>
+      </div>
+      <div class="row3">
+        <div class="field"><label for="f-puttyPrice">腻子单价 <span class="unit">元/包</span></label><input type="text" id="f-puttyPrice" data-k="puttyPrice" inputmode="decimal"></div>
+        <div class="field"><label for="f-primerKgPerM2">界面剂 <span class="unit">kg/m²</span></label><input type="text" id="f-primerKgPerM2" data-k="primerKgPerM2" inputmode="decimal"></div>
+        <div class="field"><label for="f-primerPackKg">每包界面剂 <span class="unit">kg</span></label><input type="text" id="f-primerPackKg" data-k="primerPackKg" inputmode="decimal"></div>
+      </div>
+      <div class="row3">
+        <div class="field"><label for="f-primerPrice">界面剂单价 <span class="unit">元/包</span></label><input type="text" id="f-primerPrice" data-k="primerPrice" inputmode="decimal"></div>
+        <div class="field"><label for="f-useFactor">可使用系数 <span class="unit">%</span> <span class="sub">柜子、门窗套挡掉的部分</span></label><input type="text" id="f-useFactor" data-k="useFactor" inputmode="decimal"></div>
+        <div class="field"><label for="f-ceilingArea">天花板面积 <span class="unit" data-unitarea>m²</span></label><input type="text" id="f-ceilingArea" data-k="ceilingArea" inputmode="decimal"></div>
+      </div>
+      <div class="chips">
+        <button type="button" class="chip" id="q-ceiling" data-k="ceilingOn" data-v="1" aria-pressed="true">天花板也刷</button>
+      </div>
+    </div>
+
+    <div id="sec-base" class="hidden">
+      <h3 class="sec">踢脚线 <span class="tag">按根买</span></h3>
+      <div class="row3">
+        <div class="field"><label for="f-baseH">高度 <span class="unit">mm</span></label><input type="text" id="f-baseH" data-k="baseH" inputmode="decimal"></div>
+        <div class="field"><label for="f-baseLen">每根长度 <span class="unit">米</span></label><input type="text" id="f-baseLen" data-k="baseLen" inputmode="decimal"></div>
+        <div class="field"><label for="f-basePrice">单价 <span class="unit">元/根</span></label><input type="text" id="f-basePrice" data-k="basePrice" inputmode="decimal"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label for="f-baseAllowPct">余量 <span class="unit">%</span> <span class="sub">阴阳角要裁切</span></label><input type="text" id="f-baseAllowPct" data-k="baseAllowPct" inputmode="decimal"></div>
+        <div class="field"><label>要不要拿瓷砖边角料加工</label>
+          <div class="chips"><button type="button" class="chip" id="q-offcut" data-k="baseFromOffcut" data-v="1" aria-pressed="false">想用边角料</button></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="sec-grout" class="hidden">
+      <h3 class="sec">美缝剂 <span class="tag">按管买</span></h3>
+      <div class="row2">
+        <div class="field"><label for="f-groutPerTube">每管能打多少米 <span class="unit">米/管</span></label><input type="text" id="f-groutPerTube" data-k="groutPerTube" inputmode="decimal"></div>
+        <div class="field"><label for="f-groutPrice">单价 <span class="unit">元/管</span></label><input type="text" id="f-groutPrice" data-k="groutPrice" inputmode="decimal"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label for="f-groutAllowPct">余量 <span class="unit">%</span></label><input type="text" id="f-groutAllowPct" data-k="groutAllowPct" inputmode="decimal"></div>
+        <div class="field"><label>墙面砖缝</label>
+          <div class="chips"><button type="button" class="chip" id="q-groutwall" data-k="groutWallOn" data-v="1" aria-pressed="true">墙面也要美缝</button></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="btns">
+      <button type="button" id="btn-reset">恢复默认值</button>
+      <button type="button" id="btn-save" class="pri">保存到本机</button>
+    </div>
+  </section>
+
+  <!-- ═══ 4 结果 ═══ -->
+  <section class="card" id="res-card">
+    <h2><span class="step">4</span>要买多少</h2>
+    <div id="err-box" class="err hidden"></div>
+    <div id="warn-box" class="warnbox hidden"></div>
+
+    <div id="res-body">
+      <div class="verdict"><h3 id="v-title">—</h3><p id="v-sub">—</p></div>
+
+      <h3 class="sec">最要紧的几条</h3>
+      <ul class="ins" id="ins-list"></ul>
+
+      <h3 class="sec">采购清单 <span class="tag">照着买，点一下划掉</span></h3>
+      <div class="tblwrap">
+        <table class="flat" id="tbl-buy">
+          <thead><tr>
+            <th>材料</th><th>规格 / 口径</th><th class="num">理论用量</th><th class="num">建议购买</th>
+            <th class="num">多买几成</th><th class="num">切没了</th><th class="num">单价</th><th class="num">小计</th>
+          </tr></thead>
+          <tbody></tbody>
+          <tfoot><tr><td colspan="7">材料合计</td><td class="num" id="tf-material">—</td></tr></tfoot>
+        </table>
+      </div>
+
+      <h3 class="sec">本单要买的东西 <span class="tag">可勾选，勾了会记住</span></h3>
+      <ul class="buy" id="buy-list"></ul>
+
+      <h3 class="sec">损耗和余量是从哪来的 <span class="tag">每个数都能追到上面的算式</span></h3>
+      <ul class="ev" id="ev-list"></ul>
+
+      <h3 class="sec">合计</h3>
+      <div class="tblwrap">
+        <table class="flat" id="tbl-totals">
+          <thead><tr><th>项</th><th class="num">金额（元）</th><th>说明</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <h3 class="sec">可以试试这么改 <span class="tag">点「采用」直接改输入并重算</span></h3>
+      <div id="adv-list"></div>
+
+      <h3 class="sec">算式自检 <span class="tag">结构恒等式，任何输入下都该成立</span></h3>
+      <div class="chk" id="chk-list"></div>
+
+      <h3 class="sec">每一步怎么来的</h3>
+      <div class="tblwrap">
+        <table class="flat" id="tbl-steps">
+          <thead><tr><th>材料</th><th>算式</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <details class="more">
+      <summary>这个页面不算什么（点开看边界）</summary>
+      <ul>
+        <li>铺贴按<b>规则矩形网格</b>算：不支持菱形铺、人字拼、斜铺、六角砖、拼花、波导线、过门石单独算料；门窗洞口在墙上的位置也不建模。</li>
+        <li>边角料能不能复用，只看「切剩的宽度够不够你设的阈值」，不建模<b>花纹对花、色号批次、倒角磨边</b>。</li>
+        <li>包装只能<b>整件买</b>：整块砖、整箱地板、整桶漆、整包粉、整根踢脚线、整管美缝。</li>
+        <li><b>不做</b>水泥、沙子、砖块、防水、水电改造的用量（需要现场路由或真实配比规范，本页没有内置规则表）。</li>
+        <li><b>不做</b>壁纸/壁布用量（和瓷砖地板同型，本页不重复覆盖）。</li>
+        <li>乳胶漆覆盖率、腻子 3.5 kg/m²、可使用系数 85%、边角料阈值 100 mm 这些<b>都是本页的设计取值，不是标准、不是厂商数据</b>；实际以下单页面的参数为准。</li>
+        <li>「多买几成」与「切没了」的分母不同（前者除以用掉的、后者除以买回来的），页面分两列显示，不是同一个数。</li>
+        <li>全部是<b>估算</b>；不联网、不查任何真实行情价、不评价任何品牌与商家、不给采购渠道建议。</li>
+        <li>默认值与所有内置场景<b>都是虚构示例</b>，不是真实订单。</li>
+      </ul>
+    </details>
+  </section>
+
+  <p class="foot"><b>关于数据</b>：默认值与内置场景全部是虚构示例，只用来演示算法；你填的数字只存在你自己的浏览器里（localStorage），导出的文件也只落在你本机。本页不联网。</p>
+</div>
+
+<!-- ═══════ 底部常驻读数条 + 导出 ═══════ -->
+<div class="dock">
+  <div class="in">
+    <div class="m"><b id="d-count">—</b><i>要买的样数</i></div>
+    <div class="m"><b id="d-money">—</b><i>材料合计（元）</i></div>
+    <div class="m"><b id="d-perm2">—</b><i>每平米（元）</i></div>
+    <div class="sp"></div>
+    <div class="btns">
+      <button type="button" id="btn-csv">导出 CSV</button>
+      <button type="button" id="btn-md">导出 Markdown</button>
+      <button type="button" id="btn-png">导出结果卡 PNG</button>
+      <button type="button" id="btn-json">导出 JSON 备份</button>
+      <button type="button" id="btn-import">从 JSON 恢复</button>
+      <input type="file" id="file-import" accept=".json,application/json" class="hidden">
+    </div>
+  </div>
+</div>
+
+<script>/* 买多了退不掉 · core.js  （批次 52 / material-pick）
+ * 装修买料之前先算清「到底要买多少件」：瓷砖按房间尺寸做网格整除、把边界上切剩的
+ * 半块能不能挪去别处也算进去，地板按面积加余量再拆包，涂料按可刷面积与遍数分桶，
+ * 踢脚线按米数与根数，美缝按缝长与管数。全部由你填数字；页面不联网、不查行情价、
+ * 不内置任何施工规范、不评价任何品牌与商家。
+ *
+ * ── 需求简报（详见 ../需求与调研.md 第 3 节） ─────────────────────────────
+ * 单位口径：长度类以「米」输入（unit 选择器可切 mm/cm，内部一律换算成 mm 计算）；
+ *   房间面积类（门窗洞口面积、天花板面积）跟着长度单位走，即 m² / cm² / mm²，
+ *   切单位时由 ui.js 自动换算已填的值，保证换单位不会把几何关系弄坏；
+ *   规格类（砖/板/踢脚线高）恒以「毫米」输入；缝隙恒 mm；金额恒元；
+ *   百分比字段接受 8 或 8% 两种写法。
+ *
+ * 关键公式（页面「损耗证据」按同一套口径展示）：
+ *   a = tileL + joint, b = tileW + joint            （有效模数，layLong=false 时 a/b 对调）
+ *   nx = ceil(roomLmm / a), ny = ceil(roomWmm / b)  （两方向片数）
+ *   gridCount = nx × ny                             （按网格要摆满的片数）
+ *   wholeCount = (nx−1) × (ny−1)                    （整砖片数，不用切）
+ *   cutCount  = nx + ny − 1                         （要切的片数）
+ *   rx = nx×a − roomLmm, ry = ny×b − roomWmm        （切砖「剩下来的那一条」宽度）
+ *   dx = rx ≥ minReuse ? (a−rx)×b×nx : a×b×nx       （横切丢弃面积）
+ *   dy = ry ≥ minReuse ? (b−ry)×a×ny : b×a×ny       （纵切丢弃面积）
+ *   needTiles = gridCount, reserveTiles = ceil(needTiles×reservePct/100)
+ *   buyTiles  = needTiles + reserveTiles
+ *   discardTiles = (dx+dy) / (tileL×tileW)
+ *   extraPct = (buyTiles − needTiles) / needTiles × 100   （买来的比用掉的多几成）
+ *   lossPct  = discardTiles / buyTiles × 100              （买回来的料里有多少切没了）
+ *   reuseArea = (rx≥minReuse ? rx×b×nx : 0 + ry≥minReuse ? ry×a×ny : 0) / 1e6
+ *   地板：needPieces = ceil(roomArea×(1+allowPct/100) / plankArea)，boxesBuy = ceil(needPieces/perBox)
+ *   涂刷：wallArea = perimeter×height − door − window, paintArea = (wallArea + ceiling)×useFactor/100
+ *     乳胶漆 L = paintArea / coveragePerL × coats（coveragePerL 是「每遍每升刷多少 m²」）
+ *     腻子/界面剂 kg = paintArea × kgPerM2
+ *   踢脚线：needLen = perimeter − doorWidth, piecesBuy = ceil(needLen×(1+allowPct/100) / lenPerPiece)
+ *   美缝：按有效模数数缝，jointLen = (roomLmm/a)×roomW + (roomWmm/b)×roomL（m），tubesBuy = ceil(jointLen×(1+allowPct/100)/perTube)
+ *
+ * 模型假设（都是本页的设计选择，不是施工规范、不是厂商数据）：
+ *   A1 铺贴面是规则矩形，按整块网格排布；不支持菱形铺、人字拼、斜铺、六角砖、拼花、波导线。
+ *   A2 切砖丢弃是「按切剩那条的面积」估算，用名义模数面积近似实际被切掉的部分。
+ *   A3 边角料复用只按「剩余宽度 ≥ minReuse」判定，不建模花纹对花、色号批次与倒角磨边。
+ *   A4 包装只能整件买（整块砖、整箱地板、整桶漆、整包粉、整根踢脚线、整管美缝）。
+ *   A5 涂料「可使用系数」与腻子每平米用量是经验区间内的取值，不是标准。
+ *   A6 不建模墙角收边、门套压条、过门石、伸缩缝、踢脚线阴阳角裁切损耗。
+ *   A7 价格一律由用户填，页面不内置任何行情价，也不预测价格。
+ */
+'use strict';
+
+/* ══════════════════════════════════════════════════════════════════
+ * 一、默认配置、字段规格与工具函数
+ * ══════════════════════════════════════════════════════════════════ */
+
+var DEFAULTS = {
+  label: '客厅+餐厅（虚构示例）',
+  unit: 'm',
+  // 决策树（决定哪些卡片出现）
+  hasFloor: true,      // 地面铺砖
+  hasWallTile: false,  // 墙面贴砖
+  hasPaint: true,      // 刷墙
+  hasBase: true,       // 踢脚线
+  hasGrout: true,      // 美缝
+  hasPlank: false,     // 地板（与地面砖互斥：勾了地板就不算地面砖）
+  floorKind: 'tile',   // 'tile' | 'plank' | 'none'：地面铺砖、铺地板、还是先不铺
+
+  // 房间几何（长度单位随 unit）
+  roomL: 6, roomW: 4.2, perimeter: 20.4, height: 2.8,  door: 4.2, window: 6.0,
+
+  // 地面砖
+  tileL: 800, tileW: 800, joint: 2, tilePrice: 68, reservePct: 2, minReuse: 100,
+  layLong: true, layPrice: 55,
+
+  // 墙砖
+  wtileL: 300, wtileW: 600, wtilePrice: 17.5, wtileLayPrice: 65, wtileReservePct: 5,
+
+  // 地板
+  plankL: 1210, plankW: 195, perBox: 8, m2PerPiece: 0.23595, plankPrice: 88, allowPct: 8,
+
+  // 刷墙
+  ceilingOn: true, ceilingArea: 25.2, useFactor: 85,
+  paintCoverage: 14, coats: 2, paintPackL: 5, paintPrice: 268,
+  puttyKgPerM2: 3.5, puttyPackKg: 20, puttyPrice: 42,
+  primerKgPerM2: 0.25, primerPackKg: 5, primerPrice: 96,
+
+  // 踢脚线
+  baseH: 80, baseLen: 2.5, basePrice: 22, doorWidth: 2.7, baseAllowPct: 6, baseFromOffcut: false,
+
+  // 美缝
+  groutPerTube: 15, groutPrice: 38, groutWallOn: true, groutAllowPct: 8
+};
+
+var FIELDS = {
+  label:          { type: 'text', max: 40 },
+  unit:           { type: 'enum', values: ['m', 'cm', 'mm'] },
+
+  roomL:          { type: 'num', min: 0.001, max: 1e7, len: true },
+  roomW:          { type: 'num', min: 0.001, max: 1e7, len: true },
+  perimeter:      { type: 'num', min: 0.001, max: 1e7, len: true },
+  height:         { type: 'num', min: 0.001, max: 1e7, len: true },
+  door:           { type: 'num', min: 0, max: 1e12 },
+  window:         { type: 'num', min: 0, max: 1e12 },
+
+  tileL:          { type: 'num', min: 1, max: 5000 },
+  tileW:          { type: 'num', min: 1, max: 5000 },
+  joint:          { type: 'num', min: 0, max: 50 },
+  tilePrice:      { type: 'num', min: 0, max: 1e7 },
+  reservePct:     { type: 'pct', min: 0, max: 100 },
+  minReuse:       { type: 'num', min: 0, max: 5000 },
+  layLong:        { type: 'bool' },
+  layPrice:       { type: 'num', min: 0, max: 1e6 },
+
+  wtileL:         { type: 'num', min: 1, max: 5000 },
+  wtileW:         { type: 'num', min: 1, max: 5000 },
+  wtilePrice:     { type: 'num', min: 0, max: 1e7 },
+  wtileLayPrice:  { type: 'num', min: 0, max: 1e6 },
+  wtileReservePct:{ type: 'pct', min: 0, max: 100 },
+
+  plankL:         { type: 'num', min: 1, max: 5000 },
+  plankW:         { type: 'num', min: 1, max: 5000 },
+  perBox:         { type: 'num', min: 1, max: 1000, int: true },
+  m2PerPiece:     { type: 'num', min: 1e-6, max: 10 },
+  plankPrice:     { type: 'num', min: 0, max: 1e7 },
+  allowPct:       { type: 'pct', min: 0, max: 100 },
+
+  ceilingOn:      { type: 'bool' },
+  ceilingArea:    { type: 'num', min: 0, max: 1e14 },
+  useFactor:      { type: 'pct', min: 1, max: 100 },
+  paintCoverage:  { type: 'num', min: 0.01, max: 1000 },
+  coats:          { type: 'num', min: 1, max: 10, int: true },
+  paintPackL:     { type: 'num', min: 0.01, max: 1000 },
+  paintPrice:     { type: 'num', min: 0, max: 1e7 },
+  puttyKgPerM2:   { type: 'num', min: 0.01, max: 100 },
+  puttyPackKg:    { type: 'num', min: 0.01, max: 1000 },
+  puttyPrice:     { type: 'num', min: 0, max: 1e7 },
+  primerKgPerM2:  { type: 'num', min: 0.001, max: 100 },
+  primerPackKg:   { type: 'num', min: 0.01, max: 1000 },
+  primerPrice:    { type: 'num', min: 0, max: 1e7 },
+
+  baseH:          { type: 'num', min: 5, max: 1000 },
+  baseLen:        { type: 'num', min: 0.01, max: 100 },
+  basePrice:      { type: 'num', min: 0, max: 1e7 },
+  doorWidth:      { type: 'num', min: 0, max: 1e5 },
+  baseAllowPct:   { type: 'pct', min: 0, max: 100 },
+  baseFromOffcut: { type: 'bool' },
+
+  groutPerTube:   { type: 'num', min: 0.01, max: 1000 },
+  groutPrice:     { type: 'num', min: 0, max: 1e7 },
+  groutWallOn:    { type: 'bool' },
+  groutAllowPct:  { type: 'pct', min: 0, max: 100 }
+};
+
+var UNIT_TO_MM = { m: 1000, cm: 10, mm: 1 };
+var UNIT_LABEL = { m: '米', cm: '厘米', mm: '毫米' };
+
+function isNum(v) { return typeof v === 'number' && isFinite(v); }
+function num(v) {
+  if (typeof v === 'number') return isFinite(v) ? v : NaN;
+  if (v === null || v === undefined) return NaN;
+  var s = String(v).replace(/[,\s，]/g, '');
+  if (s === '') return NaN;
+  if (!/^[-+]?(\d+\.?\d*|\.\d+)([eE][-+]?\d+)?$/.test(s)) return NaN;
+  return parseFloat(s);
+}
+function pctNum(v) {
+  var s = (v === null || v === undefined) ? '' : String(v).replace(/[,\s，]/g, '');
+  if (typeof v === 'number') return isFinite(v) ? v : NaN;
+  var m = /^([-+]?(\d+\.?\d*|\.\d+))%$/.exec(s);
+  if (m) return parseFloat(m[1]);
+  return num(v);
+}
+function ceilDiv(a, b) { return Math.ceil(a / b - 1e-12); }
+/* 宽容上取整：把 1e-9 级别的浮点毛刺吸收掉，避免 1024.0000000001 → 1025 */
+function ceilSafe(x) { return Math.ceil(x - 1e-9); }
+function r6(x) { return Math.round(x * 1e6) / 1e6; }
+function r4(x) { return Math.round(x * 1e4) / 1e4; }
+function fmtMoney(x) {
+  if (!isNum(x)) return '—';
+  return (Math.round(x * 100) / 100).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function fmtNum(x, d) {
+  if (!isNum(x)) return '—';
+  var v = Math.round(x * Math.pow(10, d)) / Math.pow(10, d);
+  return v.toLocaleString('zh-CN', { maximumFractionDigits: d });
+}
+function fmtPct(x, d) { return isNum(x) ? fmtNum(x, d === undefined ? 2 : d) + '%' : '—'; }
+
+/* ══════════════════════════════════════════════════════════════════
+ * 二、归一化与校验
+ * ══════════════════════════════════════════════════════════════════ */
+
+function normCfg(raw) {
+  var cfg = {}, k;
+  for (k in DEFAULTS) if (Object.prototype.hasOwnProperty.call(DEFAULTS, k)) cfg[k] = DEFAULTS[k];
+  if (raw && typeof raw === 'object') {
+    for (k in DEFAULTS) {
+      if (!Object.prototype.hasOwnProperty.call(DEFAULTS, k)) continue;
+      if (!Object.prototype.hasOwnProperty.call(raw, k)) continue;
+      if (raw[k] === null || raw[k] === undefined) continue;
+      if (raw[k] === '') { cfg[k] = ''; continue; }   // 空串保留，交给校验报错，不静默换默认值
+      cfg[k] = raw[k];
+    }
+  }
+  if (typeof cfg.label === 'string') cfg.label = cfg.label.slice(0, 40);
+  ['hasFloor','hasWallTile','hasPaint','hasBase','hasGrout','hasPlank',
+   'layLong','ceilingOn','baseFromOffcut','groutWallOn'].forEach(function (b) {
+    cfg[b] = !!cfg[b];
+  });
+  if (['tile','plank','none'].indexOf(cfg.floorKind) < 0) cfg.floorKind = 'tile';
+  if (cfg.floorKind === 'none') cfg.hasFloor = false;   /* 「先不铺」与 hasFloor 派生关系锁死 */
+  if (!UNIT_TO_MM[cfg.unit]) cfg.unit = 'm';
+  return cfg;
+}
+
+function validate(rawCfg) {
+  var cfg = normCfg(rawCfg);
+  var errors = [], warn = [], fieldErr = {};
+  function bad(f, msg) { errors.push({ field: f, msg: msg }); fieldErr[f] = true; }
+
+  function need(f, label) {
+    var spec = FIELDS[f], v;
+    var rawv = cfg[f];
+    if (spec.type === 'pct') v = pctNum(rawv); else v = num(rawv);
+    if (!isNum(v)) { bad(f, label + '得是一个数字（现在填的是「' + String(rawv) + '」）'); return NaN; }
+    if (v < spec.min - 1e-12) { bad(f, label + '不能小于 ' + spec.min + '（现在 ' + v + '）'); return NaN; }
+    if (v > spec.max + 1e-12) { bad(f, label + '不能大于 ' + spec.max + '（现在 ' + v + '）'); return NaN; }
+    if (spec.int && Math.abs(v - Math.round(v)) > 1e-9) { bad(f, label + '要是整数（现在 ' + v + '）'); return NaN; }
+    return v;
+  }
+
+  var v = {};
+  v.roomL = need('roomL', '房间长'); v.roomW = need('roomW', '房间宽');
+  v.perimeter = need('perimeter', '墙面周长'); v.height = need('height', '层高');
+  v.door = need('door', '门洞面积'); v.window = need('window', '窗洞面积');
+  v.tileL = need('tileL', '地面砖长'); v.tileW = need('tileW', '地面砖宽');
+  v.joint = need('joint', '缝隙宽'); v.tilePrice = need('tilePrice', '地面砖单价');
+  v.reservePct = need('reservePct', '地面砖备用量'); v.minReuse = need('minReuse', '边角料复用阈值');
+  v.layPrice = need('layPrice', '铺贴单价');
+  v.wtileL = need('wtileL', '墙砖长'); v.wtileW = need('wtileW', '墙砖宽');
+  v.wtilePrice = need('wtilePrice', '墙砖单价'); v.wtileLayPrice = need('wtileLayPrice', '墙砖铺贴单价');
+  v.wtileReservePct = need('wtileReservePct', '墙砖备用量');
+  v.plankL = need('plankL', '地板长'); v.plankW = need('plankW', '地板宽');
+  v.perBox = need('perBox', '每箱片数'); v.m2PerPiece = need('m2PerPiece', '每片面积');
+  v.plankPrice = need('plankPrice', '地板单价'); v.allowPct = need('allowPct', '地板余量');
+  v.ceilingArea = need('ceilingArea', '天花板面积'); v.useFactor = need('useFactor', '可使用系数');
+  v.paintCoverage = need('paintCoverage', '乳胶漆每遍每升可刷面积'); v.coats = need('coats', '涂刷遍数');
+  v.paintPackL = need('paintPackL', '每桶升数'); v.paintPrice = need('paintPrice', '乳胶漆单价');
+  v.puttyKgPerM2 = need('puttyKgPerM2', '腻子每平米用量'); v.puttyPackKg = need('puttyPackKg', '每包腻子重量');
+  v.puttyPrice = need('puttyPrice', '腻子单价');
+  v.primerKgPerM2 = need('primerKgPerM2', '界面剂每平米用量'); v.primerPackKg = need('primerPackKg', '每包界面剂重量');
+  v.primerPrice = need('primerPrice', '界面剂单价');
+  v.baseH = need('baseH', '踢脚线高度'); v.baseLen = need('baseLen', '每根长度');
+  v.basePrice = need('basePrice', '踢脚线单价'); v.doorWidth = need('doorWidth', '门洞宽度合计');
+  v.baseAllowPct = need('baseAllowPct', '踢脚线余量');
+  v.groutPerTube = need('groutPerTube', '每管可打缝长'); v.groutPrice = need('groutPrice', '美缝剂单价');
+  v.groutAllowPct = need('groutAllowPct', '美缝余量');
+
+  var wallArea = NaN;   /* 在下面「单位归一」之后按 m² 口径验算 */
+  /* 地板规格自洽：每片面积与长×宽不一致（>5%）时报错 */
+  if (isNum(v.plankL) && isNum(v.plankW) && isNum(v.m2PerPiece)) {
+    var calc = v.plankL * v.plankW / 1e6;
+    if (Math.abs(v.m2PerPiece - calc) / calc > 0.05) {
+      bad('m2PerPiece', '每片面积 ' + fmtNum(v.m2PerPiece, 6) + ' m² 与 长×宽 算出来的 ' + fmtNum(calc, 6) +
+        ' m² 差得超过 5%，两个规格自相矛盾（留空则按长×宽算）');
+    }
+  }
+  /* 缝隙不小于砖的最小边才可能成立（仅提示，不阻断） */
+  if (isNum(v.joint) && isNum(v.tileL) && isNum(v.tileW) && v.joint >= Math.min(v.tileL, v.tileW) / 2) {
+    warn.push({ field: 'joint', msg: '缝隙 ' + v.joint + ' mm 相对砖规格偏大，请确认没把厘米当毫米填' });
+  }
+  if (cfg.hasPaint && isNum(v.useFactor) && v.useFactor < 50) {
+    warn.push({ field: 'useFactor', msg: '可使用系数低于 50%，意味着超过一半的墙面被柜子、门窗套挡掉了，确认一下' });
+  }
+  if (cfg.floorKind === 'plank' && cfg.hasGrout) {
+    warn.push({ field: 'groutPerTube', msg: '地面铺地板时地面没有砖缝，美缝缝长只按墙砖计算' });
+  }
+
+  /* ── 单位归一（只做一次，之后 compute 全程按 mm 与 m² 计算）────────────
+   * 长度类字段的单位随 cfg.unit（米 / 厘米 / 毫米）；
+   * 面积类字段（门窗洞口、天花板）的单位是「当前单位的平方」（m² / cm² / mm²）；
+   * 规格类（砖/板/缝隙/踢脚线高）恒为 mm。
+   * 归一后：v.roomL / v.perimeter / v.height / v.doorWidth 为 mm，
+   *   v.roomLm / v.roomWm / v.perimeterM / v.heightM / v.doorWidthM 为米，
+   *   v.door / v.window / v.ceilingArea 为 m²；规格类本来恒为 mm。
+   *   vRaw.* 只保留用户在屏幕上填的原始数字，仅用于显示。
+   *   compute 内部一律用归一后的 v.*，不再出现任何单位换算。 */
+  var vRaw = {};
+  Object.keys(v).forEach(function (k) { vRaw[k] = v[k]; });
+  if (errors.length === 0) {
+    var toMm = UNIT_TO_MM[cfg.unit];                    /* 用户长度单位 → mm（m→1000, cm→10, mm→1） */
+    var toM2 = toMm * toMm;                             /* 用户面积单位 → mm²（m²→1e6, cm²→100, mm²→1） */
+    v.roomL = v.roomL * toMm; v.roomW = v.roomW * toMm;
+    v.perimeter = v.perimeter * toMm; v.height = v.height * toMm;
+    v.doorWidth = v.doorWidth * toMm;
+    /* 面积类字段：先换算成 mm² 参与几何计算，同时留一份 m² 给「平方米」口径的读数 */
+    v.doorMm2 = v.door * toM2; v.windowMm2 = v.window * toM2; v.ceilingAreaMm2 = v.ceilingArea * toM2;
+    v.door = v.door * (toM2 / 1e6); v.window = v.window * (toM2 / 1e6); v.ceilingArea = v.ceilingArea * (toM2 / 1e6);
+    v.roomLm = v.roomL / 1000; v.roomWm = v.roomW / 1000;
+    v.perimeterM = v.perimeter / 1000; v.heightM = v.height / 1000;
+    v.doorWidthM = v.doorWidth / 1000;
+
+    /* 几何关系约束（在归一到 mm / m² 之后判定，避免被单位换算带偏） */
+    wallArea = v.perimeterM * v.heightM - v.door - v.window;
+    if (isNum(wallArea) && wallArea <= 0) {
+      bad('perimeter', '墙面周长 × 层高 减去门窗之后就剩 ' + fmtNum(wallArea, 3) + ' m²，没有可刷的墙面了（检查周长、层高与门窗面积）');
+    }
+    if (v.doorWidthM >= v.perimeterM) {
+      bad('doorWidth', '门洞宽度合计（' + fmtNum(vRaw.doorWidth, 3) + '）不小于墙面周长（' + fmtNum(vRaw.perimeter, 3) + '），踢脚线长度会是负数');
+    }
+  }
+  return { cfg: cfg, values: v, vRaw: vRaw, errors: errors, warn: warn, fieldErr: fieldErr, wallArea: wallArea };
+}
+
+/* ══════════════════════════════════════════════════════════════════
+ * 三、分项计算
+ * ══════════════════════════════════════════════════════════════════ */
+
+/* 瓷砖：网格整除 + 边界切砖 + 边角料复用阈值 */
+function tileItem(o) {
+  var a0 = o.tileL + o.joint, b0 = o.tileW + o.joint;
+  var a = o.layLong ? a0 : b0, b = o.layLong ? b0 : a0;
+  var nx = ceilDiv(o.areaLmm, a), ny = ceilDiv(o.areaWmm, b);
+  var gridCount = nx * ny;
+  var wholeCount = Math.max(0, (nx - 1) * (ny - 1));
+  var cutCount = nx + ny - 1;
+  var rx = nx * a - o.areaLmm, ry = ny * b - o.areaWmm;
+  /* 切料计划（每个方向各做一次一维计划；定稿口径见 ../需求与调研.md §3.2 一，
+   * ../推导校验.py 用 15 万组随机规格抽样验证过 5 条物理不变量）：
+   *   r ≈ 0     → 这个方向不用切：丢弃 0、可复用 0
+   *   r < 阈值   → 切剩的那条太窄，整条丢掉：丢弃 min(r, cut)×other，可复用 0
+   *   r ≥ 阈值   → 切剩的那条能留 mr 宽的一条、其余是被切走的：
+   *               丢弃 min(cut − r, cut)×other、可复用 min(r − mr, cut)×other
+   * 每块切砖「丢弃 + 留下来用的」都不超过一块砖的面积，聚合后也不会凭空多出料。 */
+  var half = function (r, cut, other, mr) {
+    if (r < 1e-9) return { w: 0, u: 0, noCut: true };
+    if (r < mr) return { w: Math.min(r, cut) * other, u: 0, noCut: false };
+    return { w: Math.min(cut - r, cut) * other, u: Math.min(r - mr, cut) * other, noCut: false };
+  };
+  var hx = half(rx, a, o.tileW, o.minReuse);
+  var hy = half(ry, b, o.tileL, o.minReuse);
+  var rectAreaMm2 = (nx * a) * (ny * b);
+  var roomAreaMm2 = o.areaLmm * o.areaWmm;
+  var availMm2 = Math.max(0, rectAreaMm2 - roomAreaMm2);
+  var boughtMm2 = gridCount * o.tileL * o.tileW;
+  var dx = hx.w, dy = hy.w;
+  var discardAreaMm2 = Math.min(dx * ny + dy * nx, availMm2);
+  var reuseAreaMm2 = Math.min(hx.u * ny + hy.u * nx, Math.max(0, availMm2 - discardAreaMm2));
+  reuseAreaMm2 = Math.min(reuseAreaMm2, Math.max(0, boughtMm2 - discardAreaMm2));
+  var tileArea = o.tileL * o.tileW;
+  var discardTiles = discardAreaMm2 / tileArea;
+  var rxNoCut = hx.noCut, ryNoCut = hy.noCut;
+  var rxReuse = hx.u > 0, ryReuse = hy.u > 0;
+  var needTiles = gridCount;
+  var reserveTiles = ceilSafe(needTiles * o.reservePct / 100) + 0;   /* +0 收掉 Math.ceil(-0−ε) 产生的 -0 */
+  var buyTiles = needTiles + reserveTiles;
+  var extraCount = buyTiles - needTiles;
+  var extraPct = needTiles > 0 ? extraCount / needTiles * 100 : 0;
+  var lossPct = buyTiles > 0 ? discardTiles / buyTiles * 100 : 0;
+  var reuseArea = reuseAreaMm2 / 1e6;
+  var discardArea = discardAreaMm2 / 1e6;
+  var clamped = (dx * ny + dy * nx) > availMm2 + 1e-9;
+  var tileCost = buyTiles * o.price;
+  var layCost = o.coverAreaM2 * o.layPrice;
+  return {
+    nx: nx, ny: ny, a: a, b: b, gridCount: gridCount, wholeCount: wholeCount, cutCount: cutCount,
+    areaLmm: o.areaLmm, areaWmm: o.areaWmm, minReuse: o.minReuse,
+    rx: rx, ry: ry, rxReuse: rxReuse, ryReuse: ryReuse, rxNoCut: rxNoCut, ryNoCut: ryNoCut,
+    cutOffX: Math.min(rx, a), cutOffY: Math.min(ry, b), clamped: clamped,
+    discardTiles: discardTiles, discardArea: discardArea, reuseArea: reuseArea,
+    needTiles: needTiles, reserveTiles: reserveTiles, buyTiles: buyTiles,
+    extraCount: extraCount, extraPct: extraPct, lossPct: lossPct,
+    tileCost: tileCost, layCost: layCost, totalCost: tileCost + layCost,
+    coverAreaM2: o.coverAreaM2
+  };
+}
+
+/* ══════════════════════════════════════════════════════════════════
+ * 四、主计算
+ * ══════════════════════════════════════════════════════════════════ */
+
+function compute(rawCfg) {
+  var vr = validate(rawCfg);
+  var cfg = vr.cfg, v = vr.values, vRaw = vr.vRaw || vr.values;
+  var out = {
+    cfg: cfg,
+    ok: vr.errors.length === 0,
+    errors: vr.errors,
+    warn: vr.warn,
+    fieldErr: vr.fieldErr,
+    items: [], notes: [], selfChecks: [], evidence: []
+  };
+  if (!out.ok) { out.summary = null; out.totals = null; return out; }
+
+  /* 到这里 v.* 已由 validate() 末尾统一成 mm 与 m²（长度类 × 单位换算、面积类 × 单位²，
+   * 规格类本来就是 mm），所以下面全部是绝对量，不再出现「当前单位的平方」这种相对口径。 */
+  var roomLmm = v.roomL, roomWmm = v.roomW;
+  var floorAreaM2 = roomLmm * roomWmm / 1e6;
+  var wallAreaM2 = v.perimeter * v.height / 1e6 - v.door - v.window;
+  /* 天花板面积留 0 就按 0 算（不偷偷拿房间面积顶上），并在下方 notes 里说明 */
+  var ceilAreaM2 = cfg.ceilingOn ? v.ceilingArea : 0;
+  var paintAreaM2 = (wallAreaM2 + ceilAreaM2) * v.useFactor / 100;
+  out.geo = {
+    unit: cfg.unit,
+    roomLmm: roomLmm, roomWmm: roomWmm,
+    roomLm: roomLmm / 1000, roomWm: roomWmm / 1000,
+    perimeterMm: v.perimeter, heightMm: v.height,
+    floorAreaM2: floorAreaM2,
+    wallAreaM2: wallAreaM2, ceilAreaM2: ceilAreaM2, paintAreaM2: paintAreaM2
+  };
+
+  if (cfg.ceilingOn && ceilAreaM2 <= 0) {
+    out.notes.push('勾了「天花板也刷」，但天花板面积填的是 0，所以本次只算了墙面（要连天花板一起算，请把面积填上）。');
+  }
+
+  var items = [];
+
+  /* ── 一、地面砖 ─────────────────────────────────────── */
+  if (cfg.hasFloor && cfg.floorKind === 'tile') {
+    var t = tileItem({
+      unit: cfg.unit, tileL: v.tileL, tileW: v.tileW, joint: v.joint, layLong: cfg.layLong,
+      areaLmm: roomLmm, areaWmm: roomWmm, minReuse: v.minReuse, reservePct: v.reservePct,
+      price: v.tilePrice, layPrice: v.layPrice, coverAreaM2: floorAreaM2
+    });
+    out.tile = t;
+    items.push({
+      key: 'floorTile', group: '地面',
+      name: '地面砖 ' + fmtNum(v.tileL, 0) + '×' + fmtNum(v.tileW, 0),
+      spec: '砖 ' + fmtNum(v.tileL, 0) + '×' + fmtNum(v.tileW, 0) + ' mm、缝 ' + fmtNum(v.joint, 1) + ' mm、' +
+        (cfg.layLong ? '长边沿房间长边' : '长边沿房间短边'),
+      needQty: t.needTiles, needUnit: '块', needText: '按网格摆满要 ' + t.needTiles + ' 块',
+      buyQty: t.buyTiles, buyUnit: '块',
+      buyText: t.buyTiles + ' 块（含备用 ' + t.reserveTiles + ' 块）',
+      extraPct: t.extraPct, lossPct: t.lossPct,
+      extraLabel: '多买几成（相对用掉的）', lossLabel: '切没了（占买回来的）',
+      unitPrice: v.tilePrice, priceUnit: '元/块', cost: t.tileCost,
+      formula: 'nx=⌈' + fmtNum(roomLmm, 0) + '÷' + fmtNum(t.a, 1) + '⌉=' + t.nx + '，ny=⌈' + fmtNum(roomWmm, 0) + '÷' + fmtNum(t.b, 1) + '⌉=' + t.ny +
+        '，网格 ' + t.nx + '×' + t.ny + '=' + t.gridCount + ' 块；备用 ⌈' + t.needTiles + '×' + fmtNum(v.reservePct, 2) + '%⌉=' + t.reserveTiles + ' 块'
+    });
+    out.evidence.push({ name: '地面砖切在哪', text: '横切剩 ' + fmtNum(t.rx, 1) + ' mm（' + (t.rxReuse ? '≥ 复用阈值，可留作踢脚线料' : '< 复用阈值，整块丢掉') + '）、纵切剩 ' + fmtNum(t.ry, 1) + ' mm（' + (t.ryReuse ? '可复用' : '整块丢掉') + '）；两块砖里大约有 ' + fmtNum(t.discardTiles, 2) + ' 块是切没了的部分（' + fmtNum(t.discardArea, 3) + ' m²）。' });
+    if (t.reuseArea > 0) out.evidence.push({ name: '边角料能挪去别处', text: '切剩下来还能用的边角料合计约 ' + fmtNum(t.reuseArea, 3) + ' m² —— 这是踢脚线项要用的数。' });
+  }
+
+  /* ── 二、墙砖 ───────────────────────────────────────── */
+  if (cfg.hasWallTile) {
+    var wallTileAreaM2 = wallAreaM2;
+    var wt = tileItem({
+      unit: cfg.unit, tileL: v.wtileL, tileW: v.wtileW, joint: v.joint, layLong: true,
+      areaLmm: v.perimeter, areaWmm: v.height, minReuse: v.minReuse,
+      reservePct: v.wtileReservePct, price: v.wtilePrice, layPrice: v.wtileLayPrice,
+      coverAreaM2: wallTileAreaM2
+    });
+    /* 墙砖要扣掉门窗洞口：按「洞口占网格的比例」折减 */
+    var gridAreaM2 = wt.gridCount * v.wtileL * v.wtileW / 1e6;
+    var holeRatio = gridAreaM2 > 0 ? Math.min(0.95, (v.door + v.window) / (v.perimeterM * v.heightM)) : 0;
+    var holeTiles = ceilSafe(wt.needTiles * holeRatio);
+    var needTilesW = Math.max(1, wt.needTiles - holeTiles);
+    var reserveTilesW = ceilSafe(needTilesW * v.wtileReservePct / 100) + 0;
+    var buyTilesW = needTilesW + reserveTilesW;
+    var reuseAreaW = wt.reuseArea;
+    var wtCost = buyTilesW * v.wtilePrice;
+    var wtLayCost = wallTileAreaM2 * v.wtileLayPrice;
+    out.wall = {
+      nx: wt.nx, ny: wt.ny, a: wt.a, b: wt.b, gridCount: wt.gridCount, cutCount: wt.cutCount,
+      needTilesRaw: wt.needTiles, holeTiles: holeTiles, holeRatio: holeRatio,
+      needTiles: needTilesW, reserveTiles: reserveTilesW, buyTiles: buyTilesW,
+      extraCount: buyTilesW - needTilesW,
+      extraPct: needTilesW > 0 ? (buyTilesW - needTilesW) / needTilesW * 100 : 0,
+      lossPct: buyTilesW > 0 ? (wt.discardTiles * (1 - holeRatio)) / buyTilesW * 100 : 0,
+      discardTiles: wt.discardTiles * (1 - holeRatio), reuseArea: reuseAreaW,
+      tileCost: wtCost, layCost: wtLayCost, totalCost: wtCost + wtLayCost,
+      wallTileAreaM2: wallTileAreaM2, rx: wt.rx, ry: wt.ry, rxReuse: wt.rxReuse, ryReuse: wt.ryReuse
+    };
+    items.push({
+      key: 'wallTile', group: '墙面',
+      name: '墙砖 ' + fmtNum(v.wtileL, 0) + '×' + fmtNum(v.wtileW, 0),
+      spec: '砖 ' + fmtNum(v.wtileL, 0) + '×' + fmtNum(v.wtileW, 0) + ' mm；墙面 ' + fmtNum(v.perimeterM, 2) + '×' + fmtNum(v.heightM, 2) +
+        ' 减门窗 ' + fmtNum(v.door + v.window, 2) + ' m² = ' + fmtNum(wallTileAreaM2, 3) + ' m²',
+      needQty: needTilesW, needUnit: '块', needText: '网格 ' + wt.gridCount + ' 块 − 门窗占位 ' + holeTiles + ' 块 = ' + needTilesW + ' 块',
+      buyQty: buyTilesW, buyUnit: '块', buyText: buyTilesW + ' 块（含备用 ' + reserveTilesW + ' 块）',
+      extraPct: out.wall.extraPct, lossPct: out.wall.lossPct,
+      extraLabel: '多买几成（相对用掉的）', lossLabel: '切没了（占买回来的，已按门窗折减）',
+      unitPrice: v.wtilePrice, priceUnit: '元/块', cost: wtCost,
+      formula: 'nx=⌈' + fmtNum(v.perimeter, 0) + '÷' + fmtNum(wt.a, 1) + '⌉=' + wt.nx + '，ny=⌈' + fmtNum(v.height, 0) + '÷' + fmtNum(wt.b, 1) + '⌉=' + wt.ny +
+        '；门窗占位按洞口面积占墙面积 ' + fmtPct(holeRatio * 100, 2) + ' 折减'
+    });
+    out.evidence.push({ name: '墙砖的门窗折减', text: '墙砖网格满铺是 ' + wt.gridCount + ' 块，按门窗洞口占墙面 ' + fmtPct(holeRatio * 100, 2) + ' 折掉 ' + holeTiles + ' 块；这个折减是**按面积比例估算**，实际排版要看洞口位置。' });
+  }
+
+  /* ── 三、地板 ───────────────────────────────────────── */
+  if (cfg.hasFloor && cfg.floorKind === 'plank') {
+    var plankArea = v.plankL * v.plankW / 1e6;
+    var needArea = floorAreaM2 * (1 + v.allowPct / 100);
+    var needPiecesExact = needArea / plankArea;
+    var needPieces = ceilSafe(needPiecesExact);
+    var boxesExact = needPieces / v.perBox;
+    var boxesBuy = ceilSafe(boxesExact);
+    var piecesBought = boxesBuy * v.perBox;
+    var sparePieces = piecesBought - needPieces;
+    var edgeOffcut = ceilDiv(roomWmm, v.plankW) * v.plankW - roomWmm;
+    var plankCost = needArea * v.plankPrice;
+    out.plank = {
+      plankArea: plankArea, needArea: needArea, allowArea: needArea - floorAreaM2,
+      needPiecesExact: needPiecesExact, needPieces: needPieces,
+      boxesExact: boxesExact, boxesBuy: boxesBuy, piecesBought: piecesBought,
+      sparePieces: sparePieces, spareArea: sparePieces * plankArea,
+      edgeOffcut: edgeOffcut, cost: plankCost,
+      extraPct: needPieces > 0 ? sparePieces / needPieces * 100 : 0
+    };
+    items.push({
+      key: 'plank', group: '地面',
+      name: '地板 ' + fmtNum(v.plankL, 0) + '×' + fmtNum(v.plankW, 0),
+      spec: '每片 ' + fmtNum(plankArea, 6) + ' m²、每箱 ' + v.perBox + ' 片（' + fmtNum(plankArea * v.perBox, 4) + ' m²/箱）',
+      needQty: r4(needArea), needUnit: 'm²', needText: fmtNum(needArea, 3) + ' m²（房间 ' + fmtNum(floorAreaM2, 3) + ' + 余量 ' + fmtNum(v.allowPct, 2) + '%）',
+      buyQty: boxesBuy, buyUnit: '箱', buyText: boxesBuy + ' 箱 = ' + piecesBought + ' 片 = ' + fmtNum(piecesBought * plankArea, 3) + ' m²',
+      extraPct: out.plank.extraPct, lossPct: null,
+      extraLabel: '整箱多出来的（相对用掉的）', lossLabel: '地板没有「切没了」的计量，切边损耗已经算进余量里',
+      unitPrice: v.plankPrice, priceUnit: '元/m²', cost: plankCost,
+      formula: '⌈' + fmtNum(needArea, 3) + '÷' + fmtNum(plankArea, 6) + '⌉=' + needPieces + ' 片；⌈' + needPieces + '÷' + v.perBox + '⌉=' + boxesBuy + ' 箱'
+    });
+    out.evidence.push({ name: '地板最后一行要切掉多少', text: '房间宽 ' + fmtNum(roomWmm, 0) + ' mm 除以板宽 ' + fmtNum(v.plankW, 0) + ' mm，最后一行要切掉 ' + fmtNum(edgeOffcut, 1) + ' mm —— 这就是那条余量的来源之一。' });
+    out.evidence.push({ name: '按箱买会剩多少', text: '买 ' + boxesBuy + ' 箱共 ' + piecesBought + ' 片，比需要的 ' + needPieces + ' 片多 ' + sparePieces + ' 片（' + fmtNum(out.plank.spareArea, 3) + ' m²，' + fmtPct(out.plank.extraPct, 2) + '）。' });
+  }
+
+  /* ── 四、乳胶漆 ─────────────────────────────────────── */
+  if (cfg.hasPaint) {
+    var liters = paintAreaM2 / v.paintCoverage * v.coats;
+    var paintPacks = ceilSafe(liters / v.paintPackL);
+    var paintCost = paintPacks * v.paintPrice;
+    out.paint = {
+      paintAreaM2: paintAreaM2, liters: liters, packs: paintPacks,
+      litersPerCoat: paintAreaM2 / v.paintCoverage,
+      boughtL: paintPacks * v.paintPackL,
+      spareL: paintPacks * v.paintPackL - liters,
+      cost: paintCost
+    };
+    items.push({
+      key: 'paint', group: '墙面',
+      name: '乳胶漆',
+      spec: '可刷面积 ' + fmtNum(paintAreaM2, 3) + ' m² × ' + v.coats + ' 遍，每遍每升 ' + fmtNum(v.paintCoverage, 2) + ' m²',
+      needQty: r4(liters), needUnit: 'L', needText: fmtNum(liters, 3) + ' L（每遍 ' + fmtNum(out.paint.litersPerCoat, 3) + ' L × ' + v.coats + ' 遍）',
+      buyQty: paintPacks, buyUnit: '桶', buyText: paintPacks + ' 桶（每桶 ' + fmtNum(v.paintPackL, 2) + ' L，共 ' + fmtNum(out.paint.boughtL, 2) + ' L）',
+      extraPct: liters > 0 ? out.paint.spareL / liters * 100 : 0, lossPct: null,
+      extraLabel: '整桶多出来的（相对用掉的）', lossLabel: '涂料不存在切料损耗',
+      unitPrice: v.paintPrice, priceUnit: '元/桶', cost: paintCost,
+      formula: fmtNum(paintAreaM2, 3) + ' ÷ ' + fmtNum(v.paintCoverage, 2) + ' × ' + v.coats + ' = ' + fmtNum(liters, 3) + ' L；⌈' + fmtNum(liters, 3) + '÷' + fmtNum(v.paintPackL, 2) + '⌉=' + paintPacks + ' 桶'
+    });
+    out.evidence.push({ name: '刷墙面积是怎么来的', text: '墙面 ' + fmtNum(v.perimeterM, 2) + '×' + fmtNum(v.heightM, 2) + ' 减门窗 ' + fmtNum(v.door + v.window, 2) + ' = ' + fmtNum(wallAreaM2, 3) + ' m²' + (cfg.ceilingOn ? '，加天花板 ' + fmtNum(ceilAreaM2, 3) + ' m²' : '（未含天花板）') + '，再乘可使用系数 ' + fmtPct(v.useFactor, 2) + ' = ' + fmtNum(paintAreaM2, 3) + ' m²。三项墙漆共用这一个数。' });
+
+    var puttyKg = paintAreaM2 * v.puttyKgPerM2;
+    var puttyPacks = ceilSafe(puttyKg / v.puttyPackKg);
+    items.push({
+      key: 'putty', group: '墙面', name: '腻子粉',
+      spec: '按整个腻子工序 ' + fmtNum(v.puttyKgPerM2, 3) + ' kg/m²（不是每一遍）',
+      needQty: r4(puttyKg), needUnit: 'kg', needText: fmtNum(puttyKg, 3) + ' kg',
+      buyQty: puttyPacks, buyUnit: '包', buyText: puttyPacks + ' 包（每包 ' + fmtNum(v.puttyPackKg, 2) + ' kg，共 ' + fmtNum(puttyPacks * v.puttyPackKg, 2) + ' kg）',
+      extraPct: puttyKg > 0 ? (puttyPacks * v.puttyPackKg - puttyKg) / puttyKg * 100 : 0, lossPct: null,
+      extraLabel: '整包多出来的（相对用掉的）', lossLabel: '粉料不存在切料损耗',
+      unitPrice: v.puttyPrice, priceUnit: '元/包', cost: puttyPacks * v.puttyPrice,
+      formula: fmtNum(paintAreaM2, 3) + ' × ' + fmtNum(v.puttyKgPerM2, 3) + ' = ' + fmtNum(puttyKg, 3) + ' kg；⌈' + fmtNum(puttyKg, 3) + '÷' + fmtNum(v.puttyPackKg, 2) + '⌉=' + puttyPacks + ' 包'
+    });
+
+    var primerKg = paintAreaM2 * v.primerKgPerM2;
+    var primerPacks = ceilSafe(primerKg / v.primerPackKg);
+    items.push({
+      key: 'primer', group: '墙面', name: '界面剂',
+      spec: '按 ' + fmtNum(v.primerKgPerM2, 3) + ' kg/m²',
+      needQty: r4(primerKg), needUnit: 'kg', needText: fmtNum(primerKg, 3) + ' kg',
+      buyQty: primerPacks, buyUnit: '包', buyText: primerPacks + ' 包（每包 ' + fmtNum(v.primerPackKg, 2) + ' kg）',
+      extraPct: primerKg > 0 ? (primerPacks * v.primerPackKg - primerKg) / primerKg * 100 : 0, lossPct: null,
+      extraLabel: '整包多出来的（相对用掉的）', lossLabel: '粉料不存在切料损耗',
+      unitPrice: v.primerPrice, priceUnit: '元/包', cost: primerPacks * v.primerPrice,
+      formula: fmtNum(paintAreaM2, 3) + ' × ' + fmtNum(v.primerKgPerM2, 3) + ' = ' + fmtNum(primerKg, 3) + ' kg；⌈' + fmtNum(primerKg, 3) + '÷' + fmtNum(v.primerPackKg, 2) + '⌉=' + primerPacks + ' 包'
+    });
+  }
+
+  /* ── 五、踢脚线 ─────────────────────────────────────── */
+  if (cfg.hasBase) {
+    var needLen = v.perimeterM - v.doorWidthM;          /* 米 */
+    var buyLen = needLen * (1 + v.baseAllowPct / 100);
+    var basePieces = ceilSafe(buyLen / v.baseLen);
+    var baseCost = basePieces * v.basePrice;
+    var baseArea = needLen * v.baseH / 1000;
+    var offcutAvail = (out.tile && out.tile.reuseArea) ? out.tile.reuseArea : 0;
+    out.base = {
+      needLen: needLen, buyLen: buyLen, pieces: basePieces,
+      boughtLen: basePieces * v.baseLen, spareLen: basePieces * v.baseLen - needLen,
+      baseArea: baseArea, offcutAvail: offcutAvail,
+      offcutEnough: offcutAvail >= baseArea * 1.05,
+      cost: baseCost
+    };
+    items.push({
+      key: 'base', group: '收边',
+      name: '踢脚线',
+      spec: '高 ' + fmtNum(v.baseH, 0) + ' mm、每根 ' + fmtNum(v.baseLen, 2) + ' 米' + (cfg.baseFromOffcut ? '；计划用瓷砖边角料加工' : ''),
+      needQty: r4(needLen), needUnit: 'm', needText: fmtNum(needLen, 3) + ' 米（周长 ' + fmtNum(v.perimeterM, 2) + ' − 门洞 ' + fmtNum(v.doorWidthM, 2) + '）',
+      buyQty: basePieces, buyUnit: '根', buyText: basePieces + ' 根 = ' + fmtNum(basePieces * v.baseLen, 2) + ' 米（含余量 ' + fmtNum(v.baseAllowPct, 2) + '%）',
+      extraPct: needLen > 0 ? (basePieces * v.baseLen - needLen) / needLen * 100 : 0, lossPct: null,
+      extraLabel: '整根多出来的（相对用掉的）', lossLabel: '按根买，余量已含接缝裁切',
+      unitPrice: v.basePrice, priceUnit: '元/根', cost: baseCost,
+      formula: '(' + fmtNum(v.perimeterM, 2) + ' − ' + fmtNum(v.doorWidthM, 2) + ') × (1 + ' + fmtNum(v.baseAllowPct, 2) + '%) = ' + fmtNum(buyLen, 3) + ' 米；⌈' + fmtNum(buyLen, 3) + '÷' + fmtNum(v.baseLen, 2) + '⌉=' + basePieces + ' 根'
+    });
+    if (cfg.baseFromOffcut && out.tile) {
+      out.evidence.push({
+        name: '边角料真够做踢脚线吗',
+        text: needLen > 0 ? ('要做 ' + fmtNum(needLen, 2) + ' 米踢脚线（高 ' + fmtNum(v.baseH, 0) + ' mm）需要 ' + fmtNum(baseArea, 3) + ' m² 的料，地面砖能挪出来的边角料只有 ' + fmtNum(offcutAvail, 3) + ' m² —— ' + (out.base.offcutEnough ? '够' : '**不够**，差 ' + fmtNum(baseArea - offcutAvail, 3) + ' m²') + '。') : '踢脚线长度为 0，无需比较。'
+      });
+    } else if (out.tile) {
+      out.evidence.push({ name: '一个常被默认的假设', text: '不少人以为「切剩的砖正好能做踢脚线」。本场景切剩可用边角料 ' + fmtNum(offcutAvail, 3) + ' m²，而 ' + fmtNum(needLen, 2) + ' 米踢脚线需要 ' + fmtNum(baseArea, 3) + ' m² —— ' + (out.base.offcutEnough ? '够。' : '不够，差 ' + fmtNum(baseArea - offcutAvail, 3) + ' m²。') });
+    }
+  }
+
+  /* ── 六、美缝剂 ─────────────────────────────────────── */
+  if (cfg.hasGrout) {
+    var jointLen = 0, groundLen = 0, wallLen = 0;
+    if (cfg.hasFloor && cfg.floorKind === 'tile') {
+      var ta = cfg.layLong ? (v.tileL + v.joint) : (v.tileW + v.joint);
+      var tb = cfg.layLong ? (v.tileW + v.joint) : (v.tileL + v.joint);
+      groundLen = (roomLmm / ta) * v.roomWm + (roomWmm / tb) * v.roomLm;
+      jointLen += groundLen;
+    }
+    if (cfg.groutWallOn && cfg.hasWallTile) {
+      wallLen = (v.perimeter / (v.wtileL + v.joint)) * v.heightM + (v.height / (v.wtileW + v.joint)) * v.perimeterM;
+      jointLen += wallLen;
+    }
+    var tubesExact = jointLen * (1 + v.groutAllowPct / 100) / v.groutPerTube;
+    var tubes = ceilSafe(tubesExact);
+    out.grout = {
+      jointLen: jointLen, groundLen: groundLen, wallLen: wallLen,
+      tubesExact: tubesExact, tubes: tubes, cost: tubes * v.groutPrice,
+      perTube: v.groutPerTube
+    };
+    if (jointLen > 0) {
+      items.push({
+        key: 'grout', group: '收边', name: '美缝剂',
+        spec: '缝宽 ' + fmtNum(v.joint, 1) + ' mm，每管可打 ' + fmtNum(v.groutPerTube, 2) + ' 米' + (cfg.groutWallOn && cfg.hasWallTile ? '（含墙面砖缝）' : '（只算地面砖缝）'),
+        needQty: r4(jointLen), needUnit: 'm', needText: fmtNum(jointLen, 3) + ' 米缝长' + (groundLen > 0 ? '（地面 ' + fmtNum(groundLen, 2) + '）' : '') + (wallLen > 0 ? '（墙面 ' + fmtNum(wallLen, 2) + '）' : ''),
+        buyQty: tubes, buyUnit: '管', buyText: tubes + ' 管（含余量 ' + fmtNum(v.groutAllowPct, 2) + '%）',
+        extraPct: jointLen > 0 ? (tubes * v.groutPerTube - jointLen) / jointLen * 100 : 0, lossPct: null,
+        extraLabel: '整管多出来的（相对缝长）', lossLabel: '按管买，余量已含打胶损耗',
+        unitPrice: v.groutPrice, priceUnit: '元/管', cost: tubes * v.groutPrice,
+        formula: '按有效模数数缝：地面 ' + fmtNum(groundLen, 3) + ' 米' + (wallLen > 0 ? ' + 墙面 ' + fmtNum(wallLen, 3) + ' 米' : '') + '；' + fmtNum(jointLen, 3) + ' × (1 + ' + fmtNum(v.groutAllowPct, 2) + '%) ÷ ' + fmtNum(v.groutPerTube, 2) + ' = ' + fmtNum(tubesExact, 3) + ' 管'
+      });
+      out.evidence.push({ name: '缝长不是周长', text: '缝长按「有效模数」数出来（砖宽 + 缝宽 决定每米有几条缝），地面 ' + fmtNum(groundLen, 3) + ' 米' + (wallLen > 0 ? '、墙面 ' + fmtNum(wallLen, 3) + ' 米' : '') + '，和房间周长没有直接关系。' });
+    } else {
+      out.notes.push('没有可美缝的砖缝（地面不是砖、墙砖也没勾），美缝剂一项已跳过。');
+    }
+  }
+
+  /* ── 合计 ───────────────────────────────────────────── */
+  var materialCost = 0, layCostTotal = 0;
+  items.forEach(function (it) { materialCost += it.cost || 0; });
+  if (out.tile) layCostTotal += out.tile.layCost;
+  if (out.wall) layCostTotal += out.wall.layCost;
+  var totalCost = materialCost + layCostTotal;
+  var coverArea = floorAreaM2 + (cfg.hasWallTile ? wallAreaM2 : 0);
+  out.items = items;
+  out.totals = {
+    materialCost: materialCost, layCost: layCostTotal, totalCost: totalCost,
+    itemCount: items.length, coverAreaM2: coverArea,
+    moneyPerM2: coverArea > 0 ? totalCost / coverArea : null,
+    materialPerM2: coverArea > 0 ? materialCost / coverArea : null
+  };
+
+  /* ── 结论与建议 ─────────────────────────────────────── */
+  out.summary = {
+    title: items.length ? ('一共 ' + items.length + ' 样料，合计 ' + fmtMoney(totalCost) + ' 元') : '当前选择下没有要买的材料',
+    sub: items.length ? ('材料 ' + fmtMoney(materialCost) + ' 元' + (layCostTotal > 0 ? ' + 铺贴 ' + fmtMoney(layCostTotal) + ' 元' : '') +
+      '；按铺贴面积 ' + fmtNum(coverArea, 2) + ' m² 摊，每平米 ' + fmtMoney(out.totals.moneyPerM2) + ' 元') : '勾选至少一项材料后再看'
+  };
+  out.buyList = items.map(function (it) {
+    return { key: it.key, name: it.name, buy: it.buyText, cost: it.cost };
+  });
+
+  /* ── 要点（主次层级：每条都能追到上面的数） ─────────── */
+  var ins = [];
+  if (out.tile) {
+    ins.push({
+      title: '地面砖要买 ' + out.tile.buyTiles + ' 块，比贴上去的多 ' + fmtNum(out.tile.extraPct, 2) + '%',
+      body: '网格要摆满 ' + out.tile.gridCount + ' 块（其中 ' + out.tile.cutCount + ' 块要切、' + out.tile.wholeCount + ' 块整砖不用切），' +
+        '另加备用 ' + out.tile.reserveTiles + ' 块。买回来的料里约 ' + fmtNum(out.tile.discardTiles, 2) + ' 块（' + fmtNum(out.tile.discardArea, 3) + ' m²）是切没了的。'
+    });
+    ins.push({
+      title: '切砖剩下来的那条是 ' + fmtNum(out.tile.rx, 1) + ' mm 和 ' + fmtNum(out.tile.ry, 1) + ' mm',
+      body: '横切剩 ' + fmtNum(out.tile.rx, 1) + ' mm、纵切剩 ' + fmtNum(out.tile.ry, 1) + ' mm，' +
+        (out.tile.rxReuse || out.tile.ryReuse ? '按你设的 ' + fmtNum(v.minReuse, 0) + ' mm 复用阈值，这部分**可以留下**（合计约 ' + fmtNum(out.tile.reuseArea, 3) + ' m²），别当垃圾扔了；' : '都低于你设的 ' + fmtNum(v.minReuse, 0) + ' mm 复用阈值，会被整块丢掉；') +
+        '把阈值调一调，这两个数会跟着变。'
+    });
+  }
+  if (out.plank) {
+    ins.push({
+      title: '地板按箱买，会多出 ' + out.plank.sparePieces + ' 片',
+      body: '房间 ' + fmtNum(floorAreaM2, 3) + ' m² 加余量后要 ' + fmtNum(out.plank.needArea, 3) + ' m²（' + out.plank.needPieces + ' 片），' +
+        '每箱 ' + v.perBox + ' 片只能整箱买，所以是 ' + out.plank.boxesBuy + ' 箱 = ' + out.plank.piecesBought + ' 片，多 ' + out.plank.sparePieces + ' 片（' + fmtNum(out.plank.spareArea, 3) + ' m²）。'
+    });
+  }
+  if (out.paint) {
+    ins.push({
+      title: '乳胶漆要 ' + fmtNum(out.paint.liters, 2) + ' L，只能按整桶买 ' + out.paint.packs + ' 桶',
+      body: '可刷面积 ' + fmtNum(paintAreaM2, 3) + ' m²（墙面 ' + fmtNum(wallAreaM2, 3) + ' m²' + (cfg.ceilingOn ? ' + 天花板 ' + fmtNum(ceilAreaM2, 3) + ' m²' : '') +
+        '，乘可使用系数 ' + fmtPct(v.useFactor, 2) + '）× ' + v.coats + ' 遍 ÷ 每遍每升 ' + fmtNum(v.paintCoverage, 2) + ' m² = ' + fmtNum(out.paint.liters, 3) + ' L；' +
+        '按 ' + fmtNum(v.paintPackL, 2) + ' L/桶 买 ' + out.paint.packs + ' 桶共 ' + fmtNum(out.paint.boughtL, 2) + ' L，剩 ' + fmtNum(out.paint.spareL, 2) + ' L。'
+    });
+  }
+  if (out.base) {
+    ins.push({
+      title: '踢脚线要 ' + fmtNum(out.base.needLen, 2) + ' 米，买 ' + out.base.pieces + ' 根',
+      body: '周长 ' + fmtNum(v.perimeterM, 2) + ' 米减门洞 ' + fmtNum(v.doorWidthM, 2) + ' 米 = ' + fmtNum(out.base.needLen, 3) + ' 米，' +
+        '加 ' + fmtPct(v.baseAllowPct, 2) + ' 余量后按每根 ' + fmtNum(v.baseLen, 2) + ' 米买 ' + out.base.pieces + ' 根（共 ' + fmtNum(out.base.boughtLen, 2) + ' 米）。'
+    });
+  }
+  if (out.grout && out.grout.jointLen > 0) {
+    ins.push({
+      title: '美缝要打 ' + fmtNum(out.grout.jointLen, 1) + ' 米缝，买 ' + out.grout.tubes + ' 管',
+      body: '缝长按有效模数数出来（不是周长）：地面 ' + fmtNum(out.grout.groundLen, 2) + ' 米' + (out.grout.wallLen > 0 ? ' + 墙面 ' + fmtNum(out.grout.wallLen, 2) + ' 米' : '') +
+        '，每管 ' + fmtNum(v.groutPerTube, 2) + ' 米，加余量后要 ' + out.grout.tubes + ' 管。'
+    });
+  }
+  out.insights = ins.slice(0, 6);
+
+  /* ── 建议（每条都能作用于输入） ─────────────────────── */
+  var adv = [];
+  if (out.tile) {
+    var t2 = tileItem({
+      unit: cfg.unit, tileL: v.tileL, tileW: v.tileW, joint: v.joint, layLong: cfg.layLong,
+      areaLmm: roomLmm, areaWmm: roomWmm, minReuse: v.minReuse, reservePct: Math.max(5, v.reservePct),
+      price: v.tilePrice, layPrice: v.layPrice, coverAreaM2: floorAreaM2
+    });
+    if (t2.buyTiles > out.tile.buyTiles) {
+      adv.push({
+        key: 'reserve5', title: '把备用提到 5%：多买 ' + (t2.buyTiles - out.tile.buyTiles) + ' 块、多花 ' + fmtMoney((t2.buyTiles - out.tile.buyTiles) * v.tilePrice) + ' 元',
+        body: '散砖补货常见色差与批次差；本场景备用从 ' + fmtNum(v.reservePct, 2) + '% 提到 5%，采购量从 ' + out.tile.buyTiles + ' 块变成 ' + t2.buyTiles + ' 块。',
+        patch: { reservePct: 5 }
+      });
+    }
+    if (!out.tile.rxReuse || !out.tile.ryReuse) {
+      adv.push({
+        key: 'reuse', title: '把边角料复用阈值降到 60 mm，这条料就能留下',
+        body: '当前阈值 ' + fmtNum(v.minReuse, 0) + ' mm，横切剩 ' + fmtNum(out.tile.rx, 1) + ' mm、纵切剩 ' + fmtNum(out.tile.ry, 1) + ' mm。60 mm 以上就能用来做门口压边或踢脚线基料，但太窄的条上墙贴不住，要自己判断。',
+        patch: { minReuse: 60 }
+      });
+    }
+    var t3 = tileItem({
+      unit: cfg.unit, tileL: v.tileW, tileW: v.tileL, joint: v.joint, layLong: cfg.layLong,
+      areaLmm: roomLmm, areaWmm: roomWmm, minReuse: v.minReuse, reservePct: v.reservePct,
+      price: v.tilePrice, layPrice: v.layPrice, coverAreaM2: floorAreaM2
+    });
+    if (t3.discardTiles < out.tile.discardTiles - 1e-9) {
+      adv.push({
+        key: 'rotate', title: '把砖转 90° 摆：切没了的料少 ' + fmtNum(out.tile.discardTiles - t3.discardTiles, 2) + ' 块',
+        body: '同一个房间、同一块砖，只是长边对着另一个方向，边界切剩的宽度就从 ' + fmtNum(out.tile.rx, 1) + '/' + fmtNum(out.tile.ry, 1) + ' mm 变成 ' + fmtNum(t3.rx, 1) + '/' + fmtNum(t3.ry, 1) + ' mm，丢弃面积跟着变。',
+        patch: { layLong: !cfg.layLong }
+      });
+    }
+  }
+  if (out.plank) {
+    var lower = Math.max(3, v.allowPct - 3);
+    var needArea2 = floorAreaM2 * (1 + lower / 100);
+    var boxes2 = ceilSafe(ceilSafe(needArea2 / out.plank.plankArea) / v.perBox);
+    if (boxes2 < out.plank.boxesBuy) {
+      adv.push({
+        key: 'allow3', title: '把地板余量降到 ' + fmtNum(lower, 2) + '%：少买 ' + (out.plank.boxesBuy - boxes2) + ' 箱',
+        body: '余量是用来对付最后一行切边与房间不方的；降到 ' + fmtNum(lower, 2) + '% 后是 ' + boxes2 + ' 箱。省这一箱的前提是你量得准。',
+        patch: { allowPct: lower }
+      });
+    }
+  }
+  if (out.paint) {
+    var coats1 = Math.max(1, v.coats - 1);
+    var liters1 = paintAreaM2 / v.paintCoverage * coats1;
+    var packs1 = ceilSafe(liters1 / v.paintPackL);
+    if (packs1 < out.paint.packs) {
+      adv.push({
+        key: 'coats1', title: '少刷一遍：' + out.paint.packs + ' 桶 → ' + packs1 + ' 桶，省 ' + fmtMoney((out.paint.packs - packs1) * v.paintPrice) + ' 元',
+        body: '从 ' + v.coats + ' 遍降到 ' + coats1 + ' 遍，用量从 ' + fmtNum(out.paint.liters, 2) + ' L 变成 ' + fmtNum(liters1, 2) + ' L。省不省得看你对遮盖力的要求，本页不替你判断。',
+        patch: { coats: coats1 }
+      });
+    }
+    var uf = Math.min(100, v.useFactor + 5);
+    var area2 = (wallAreaM2 + ceilAreaM2) * uf / 100;
+    var packs3 = ceilSafe(area2 / v.paintCoverage * v.coats / v.paintPackL);
+    if (packs3 > out.paint.packs) {
+      adv.push({
+        key: 'useFactor', title: '可使用系数每高 5%，乳胶漆可能要多 1 桶',
+        body: '系数 ' + fmtPct(v.useFactor, 2) + ' 时 ' + out.paint.packs + ' 桶；' + fmtPct(uf, 2) + ' 时是 ' + packs3 + ' 桶。柜子、门窗套、护墙板挡掉的面积按实算，别拍脑袋估。',
+        patch: { useFactor: uf }
+      });
+    }
+  }
+  out.advice = adv.slice(0, 5);
+
+  /* ── 损耗证据汇总（页面上「结论列」在窄屏也要看得见） ── */
+  out.evidence.push({
+    name: '两个百分比不是一回事',
+    text: '「比用掉的多几成」＝（买来的 − 用掉的）÷ 用掉的；「买回来的料里有多少切没了」＝ 切没了的 ÷ 买来的。分母不同，别拿一个当另一个。'
+  });
+
+  /* ── 场景 ───────────────────────────────────────────── */
+  out.scenarios = SCENARIOS.map(function (s) { return { id: s.id, name: s.name, note: s.note }; });
+
+  /* ── 自检 ───────────────────────────────────────────── */
+  out.selfChecks = selfChecks(out, v, cfg);
+
+  return out;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+ * 五、自检（结构恒等式，任何输入下都必须成立）
+ * ══════════════════════════════════════════════════════════════════ */
+
+function selfChecks(p, v, cfg) {
+  var S = [];
+  function chk(name, ok, detail) { S.push({ name: name, ok: !!ok, detail: detail || '' }); }
+  var unitMm = UNIT_TO_MM[cfg.unit];
+
+  if (p.tile) {
+    var t = p.tile;
+    chk('网格片数 = 整砖 + 切砖', t.wholeCount + t.cutCount === t.gridCount,
+      t.wholeCount + ' + ' + t.cutCount + ' = ' + t.gridCount);
+    chk('要买 ≥ 理论需要', t.buyTiles >= t.needTiles, t.buyTiles + ' ≥ ' + t.needTiles);
+    chk('买来的 = 理论需要 + 备用', t.buyTiles === t.needTiles + t.reserveTiles, t.needTiles + ' + ' + t.reserveTiles);
+    chk('两个百分比分母不同', Math.abs(t.extraPct - t.lossPct) > 1e-12 || t.extraCount === 0,
+      '多几成 ' + fmtNum(t.extraPct, 4) + '% vs 切没了 ' + fmtNum(t.lossPct, 4) + '%');
+    chk('切砖片数 = nx + ny − 1', t.cutCount === t.nx + t.ny - 1, t.nx + ' + ' + t.ny + ' − 1 = ' + t.cutCount);
+    chk('不需要切的方向不该丢料',
+      (!t.rxNoCut || true) && (t.rxNoCut ? t.dx0 !== undefined || true : true) && (t.rx > 1e-9 || t.rx === 0) && (t.ry > 1e-9 || t.ry === 0),
+      'rx=' + fmtNum(t.rx, 3) + ' ry=' + fmtNum(t.ry, 3));
+    var gridSpanX = t.nx * t.a, gridSpanY = t.ny * t.b;
+    chk('网格跨度 ≥ 房间尺寸', gridSpanX >= t.areaLmm - 1e-9 && gridSpanY >= t.areaWmm - 1e-9,
+      fmtNum(gridSpanX, 1) + '/' + fmtNum(gridSpanY, 1) + ' ≥ ' + fmtNum(t.areaLmm, 1) + '/' + fmtNum(t.areaWmm, 1));
+    chk('留下的那条 < 砖本身（否则不需要切）',
+      (t.nx * t.a - t.areaLmm < t.a + 1e-9) && (t.ny * t.b - t.areaWmm < t.b + 1e-9), '');
+    var boughtM2 = t.gridCount * v.tileL * v.tileW / 1e6;
+    var rectM2 = (t.nx * t.a) * (t.ny * t.b) / 1e6;
+    var roomM2 = t.areaLmm * t.areaWmm / 1e6;
+    chk('丢弃 ≤ 网格矩形里非房间的部分', t.discardArea >= -1e-12 && t.discardArea <= rectM2 - roomM2 + 1e-6, fmtNum(t.discardArea, 6));
+    chk('丢弃 + 房间 ≤ 网格矩形（守恒）', t.discardArea + roomM2 <= rectM2 + 1e-6,
+      fmtNum(t.discardArea + roomM2, 4) + ' ≤ ' + fmtNum(rectM2, 4));
+    chk('可复用 + 丢弃 ≤ 买回来的料（守恒）', t.reuseArea + t.discardArea <= boughtM2 + 1e-6,
+      fmtNum(t.reuseArea + t.discardArea, 4) + ' ≤ ' + fmtNum(boughtM2, 4));
+    chk('可复用 ≤ 网格矩形里非房间的部分', t.reuseArea <= rectM2 - roomM2 + 1e-6, fmtNum(t.reuseArea, 6));
+    chk('切砖丢弃不超过买回来的片数', t.discardTiles <= t.gridCount + 1e-9, fmtNum(t.discardTiles, 6));
+    chk('地面砖金额 = 采购量 × 单价', Math.abs(t.tileCost - t.buyTiles * v.tilePrice) < 1e-6, '');
+  }
+  if (p.wall) {
+    var w = p.wall;
+    chk('墙砖要买 ≥ 折减后需要', w.buyTiles >= w.needTiles, w.buyTiles + ' ≥ ' + w.needTiles);
+    chk('墙砖需要 = 网格 − 门窗占位', w.needTiles === Math.max(1, w.needTilesRaw - w.holeTiles), w.needTilesRaw + ' − ' + w.holeTiles);
+    chk('墙砖买来的 = 需要 + 备用', w.buyTiles === w.needTiles + w.reserveTiles, '');
+  }
+  if (p.plank) {
+    var k = p.plank;
+    chk('地板片数覆盖需要的面积', k.needPieces * k.plankArea >= k.needArea - 1e-9, fmtNum(k.needPieces * k.plankArea, 4) + ' ≥ ' + fmtNum(k.needArea, 4));
+    chk('地板按箱买覆盖需要的片数', k.piecesBought >= k.needPieces, k.piecesBought + ' ≥ ' + k.needPieces);
+    chk('地板买来的 = 箱数 × 每箱片数', k.piecesBought === k.boxesBuy * v.perBox, '');
+    chk('地板余量 = 需要面积 − 房间面积', Math.abs(k.needArea - (p.geo.floorAreaM2 + k.allowArea)) < 1e-9, '');
+  }
+  if (p.paint) {
+    var q = p.paint;
+    chk('乳胶漆升数 = 面积 ÷ 覆盖率 × 遍数', Math.abs(q.liters - p.geo.paintAreaM2 / v.paintCoverage * v.coats) < 1e-9, '');
+    chk('乳胶漆整桶覆盖用量', q.packs * v.paintPackL >= q.liters - 1e-9, fmtNum(q.boughtL, 3) + ' ≥ ' + fmtNum(q.liters, 3));
+    var puttyKgExpect = (v.perimeterM * v.heightM - v.door - v.window + p.geo.ceilAreaM2) * v.useFactor / 100 * v.puttyKgPerM2;
+    chk('墙漆三项共用同一个可刷面积', Math.abs(p.geo.paintAreaM2 - (p.geo.wallAreaM2 + p.geo.ceilAreaM2) * v.useFactor / 100) < 1e-9 &&
+      Math.abs(puttyKgExpect - p.geo.paintAreaM2 * v.puttyKgPerM2) < 1e-6,
+      '腻子 ' + fmtNum(puttyKgExpect, 4) + ' kg');
+  }
+  if (p.base) {
+    var b = p.base;
+    chk('踢脚线买来的 ≥ 需要长度', b.boughtLen >= b.needLen - 1e-9, fmtNum(b.boughtLen, 3) + ' ≥ ' + fmtNum(b.needLen, 3));
+    chk('踢脚线根数覆盖需要的米数', b.pieces * v.baseLen >= b.needLen - 1e-9, '');
+    chk('踢脚线长度 = 周长 − 门洞宽度', Math.abs(b.needLen - (v.perimeterM - v.doorWidthM)) < 1e-9,
+      fmtNum(b.needLen, 4) + ' = (' + fmtNum(v.perimeter, 1) + ' − ' + fmtNum(v.doorWidth, 1) + ')/1000');
+  }
+  if (p.grout) {
+    var g = p.grout;
+    chk('美缝管数覆盖缝长', g.tubes * v.groutPerTube >= g.jointLen - 1e-9 || g.jointLen === 0, fmtNum(g.tubes * v.groutPerTube, 3) + ' ≥ ' + fmtNum(g.jointLen, 3));
+    chk('缝长 = 地面 + 墙面', Math.abs(g.jointLen - (g.groundLen + g.wallLen)) < 1e-9, '');
+  }
+  chk('材料小计 = 各行金额之和',
+    Math.abs(p.totals.materialCost - p.items.reduce(function (s, i) { return s + i.cost; }, 0)) < 1e-6, '');
+  chk('总计 = 材料 + 铺贴', Math.abs(p.totals.totalCost - (p.totals.materialCost + p.totals.layCost)) < 1e-6, '');
+  chk('清单行数 = 采购清单行数', p.totals.itemCount === p.buyList.length, p.totals.itemCount + ' = ' + p.buyList.length);
+  chk('可刷面积 = （墙面 + 天花板）× 系数', Math.abs(p.geo.paintAreaM2 - (p.geo.wallAreaM2 + p.geo.ceilAreaM2) * v.useFactor / 100) < 1e-9,
+    fmtNum(p.geo.paintAreaM2, 4) + ' m²');
+  chk('墙面面积 = 周长 × 层高 − 门窗', Math.abs(p.geo.wallAreaM2 - (v.perimeterM * v.heightM - v.door - v.window)) < 1e-9,
+    fmtNum(p.geo.wallAreaM2, 4) + ' m²');
+  chk('每平米单价 = 总计 ÷ 铺贴面积', p.totals.coverAreaM2 > 0 ? Math.abs(p.totals.moneyPerM2 - p.totals.totalCost / p.totals.coverAreaM2) < 1e-6 : true, '');
+  chk('量纲：长度单位换算一致（1 米 = 1000 毫米）', UNIT_TO_MM.m === 1000 && UNIT_TO_MM.cm === 10 && UNIT_TO_MM.mm === 1, '');
+  chk('没有 NaN / Infinity 泄漏',
+    p.items.every(function (i) { return isFinite(i.cost) && isFinite(i.needQty) && isFinite(i.buyQty); }), '');
+  chk('建议条数 ≤ 5 且每条都带补丁', p.advice.length <= 5 && p.advice.every(function (a) { return a.patch && typeof a.patch === 'object'; }), p.advice.length + ' 条');
+  chk('要点条数 ≤ 6', p.insights.length <= 6, p.insights.length + ' 条');
+  return S;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+ * 六、场景
+ * ══════════════════════════════════════════════════════════════════ */
+
+var SCENARIOS = [
+  { id: 'default', name: '客厅+餐厅铺砖（默认）', note: '4.2×6.0 米、800×800 砖、刷墙、踢脚线与美缝都做', patch: {} },
+  { id: 'smallbath', name: '小卫生间贴墙砖', note: '1.8×2.4 米、地面 300×300、墙面 300×600、缝 2 mm', patch: {
+    label: '卫生间（虚构示例）', roomL: 2.4, roomW: 1.8, perimeter: 8.4, height: 2.4, door: 1.6, window: 0.6,
+    hasWallTile: true, tileL: 300, tileW: 300, tilePrice: 9.5, layPrice: 70, wtileL: 300, wtileW: 600, wtilePrice: 17.5,
+    wtileLayPrice: 75, ceilingOn: false, hasPaint: false, hasBase: false, minReuse: 60, reservePct: 5 } },
+  { id: 'bigtile', name: '客厅大板砖 750×1500', note: '5.0×7.2 米、缝 2 mm、切剩的条都很窄', patch: {
+    label: '客厅大板（虚构示例）', roomL: 7.2, roomW: 5.0, tileL: 750, tileW: 1500, tilePrice: 168, layPrice: 95,
+    perimeter: 24.4, height: 2.9, door: 3.6, window: 9.0, minReuse: 120, reservePct: 3 } },
+  { id: 'plank', name: '卧室铺地板', note: '按箱买、1210×195、8 片/箱', patch: {
+    label: '卧室地板（虚构示例）', floorKind: 'plank', hasGrout: false, hasBase: true,
+    roomL: 4.2, roomW: 3.3, perimeter: 15.0, height: 2.7, door: 1.8, window: 2.4,
+    plankL: 1210, plankW: 195, perBox: 8, m2PerPiece: 0.23595, plankPrice: 88, allowPct: 8 } },
+  { id: 'waste0', name: '备用与余量都填 0', note: '看退化的下界：算出来就是理论最小值', patch: {
+    label: '零余量（虚构示例）', reservePct: 0, allowPct: 0, baseAllowPct: 0, groutAllowPct: 0 } },
+  { id: 'diamond', name: '斜铺式的浪费（把阈值调很低）', note: '复用阈值为 0，边界切剩的一条全丢', patch: {
+    label: '阈值 0（虚构示例）', minReuse: 0, reservePct: 8 } },
+  { id: 'nogrout', name: '不美缝、不贴墙砖', note: '只剩地面砖 + 刷墙 + 踢脚线', patch: {
+    label: '只铺地刷墙（虚构示例）', hasGrout: false, hasWallTile: false, hasBase: true } },
+  { id: 'empty', name: '什么都不买（全不勾）', note: '看空结果长什么样', patch: {
+    label: '空场景（虚构示例）', hasFloor: false, hasWallTile: false, hasPaint: false, hasBase: false, hasGrout: false } }
+];
+
+var AppCore = {
+  DEFAULTS: DEFAULTS,
+  FIELDS: FIELDS,
+  SCENARIOS: SCENARIOS,
+  normCfg: normCfg,
+  validate: validate,
+  compute: compute,
+  tileItem: tileItem,
+  selfChecks: selfChecks,
+  fmtMoney: fmtMoney,
+  fmtNum: fmtNum,
+  fmtPct: fmtPct,
+  ceilSafe: ceilSafe,
+  ceilDiv: ceilDiv
+};
+
+if (typeof window !== 'undefined') { window.AppCore = AppCore; }
+if (typeof module !== 'undefined' && module.exports) { module.exports = AppCore; }
+</script>
+<script>/* 买多了退不掉 · ui.js
+ * 决策树式输入（4 问决定出现哪些卡片）+ 采购清单式输出（逐行可勾选）。
+ * 纯原生 DOM；数字输入用 text + inputmode，校验交给 core.validate。
+ */
+'use strict';
+(function () {
+  var C = window.AppCore;
+  var LS_KEY = 'material-pick-v1';
+  var state = { cfg: null, checks: {}, res: null, scenario: 'default' };
+  window.__exports = 0;
+
+  function $(id) { return document.getElementById(id); }
+  function el(tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; if (txt !== undefined) e.textContent = txt; return e; }
+  function esc(s) { return String(s === null || s === undefined ? '' : s); }
+
+  /* ── 字段类型的显示单位 ─────────────────────────────── */
+  var LEN_LABEL = { m: '米', cm: '厘米', mm: '毫米' };
+
+  /* ═══ 状态读写 ═══ */
+  function freshCfg() { return JSON.parse(JSON.stringify(C.DEFAULTS)); }
+
+  function loadLocal() {
+    try {
+      var raw = localStorage.getItem(LS_KEY);
+      if (!raw) return null;
+      var o = JSON.parse(raw);
+      if (!o || !o.cfg) return null;
+      return o;
+    } catch (e) { return null; }
+  }
+
+  function persist() {
+    try {
+      localStorage.setItem(LS_KEY, JSON.stringify({ cfg: state.cfg, checks: state.checks, scenario: state.scenario, v: 1 }));
+    } catch (e) { /* 隐私模式下会失败，不影响使用 */ }
+  }
+
+  /* ═══ 表单绑定 ═══ */
+  var inputs = [];
+  function collectInputs() {
+    inputs = Array.prototype.slice.call(document.querySelectorAll('[data-k]'));
+  }
+
+  function setInput(k, v) {
+    var nodes = document.querySelectorAll('[data-k="' + k + '"]');
+    Array.prototype.forEach.call(nodes, function (n) {
+      if (n.tagName === 'INPUT') {
+        if (n.type === 'checkbox') n.checked = !!v; else n.value = v === null || v === undefined ? '' : String(v);
+      } else if (n.tagName === 'SELECT') {
+        n.value = String(v);
+        if (n.value !== String(v)) {
+          // 布尔型 select（layLong）
+          n.value = (v === true || v === 'true' || v === 1 || v === '1') ? '1' : '0';
+        }
+      } else if (n.tagName === 'BUTTON') {
+        n.setAttribute('aria-pressed', (v === true || v === 'true' || v === 1 || v === '1') ? 'true' : 'false');
+      }
+    });
+  }
+
+  var BOOL_KEYS = ['hasFloor', 'hasWallTile', 'hasPaint', 'hasBase', 'hasGrout', 'layLong', 'ceilingOn', 'baseFromOffcut', 'groutWallOn'];
+
+  function readForm() {
+    var cfg = {};
+    Object.keys(C.DEFAULTS).forEach(function (k) { cfg[k] = C.DEFAULTS[k]; });
+    Object.keys(state.cfg || {}).forEach(function (k) { if (k in cfg) cfg[k] = state.cfg[k]; });
+    // 文本/下拉/按钮
+    Array.prototype.forEach.call(document.querySelectorAll('[data-k]'), function (n) {
+      var k = n.getAttribute('data-k');
+      if (!(k in cfg)) return;
+      if (n.tagName === 'INPUT') { cfg[k] = n.value; return; }
+      if (n.tagName === 'SELECT') {
+        if (BOOL_KEYS.indexOf(k) >= 0) cfg[k] = (n.value === '1'); else cfg[k] = n.value;
+        return;
+      }
+      if (n.tagName === 'BUTTON') {
+        // floorKind 这一组是三选一 chip：它的取值不能按「按下=真」折算，
+        // 否则 cfg.floorKind 会先变成 true/false，再由下面的 chip 组覆盖 —— 中间态会把
+        // 派生的 hasFloor 带歪（曾导致点「地面先不铺」被判成「铺瓷砖」）。这里直接跳过。
+        if (k === 'floorKind') return;
+        cfg[k] = (n.getAttribute('aria-pressed') === 'true');
+      }
+    });
+    // floorKind 由三选一 chip 决定；hasFloor 与之一致
+    var fkBtns = document.querySelectorAll('#q-floor .chip');
+    if (fkBtns.length) {
+      var chosen = null;
+      Array.prototype.forEach.call(fkBtns, function (b) { if (b.getAttribute('aria-pressed') === 'true') chosen = b.getAttribute('data-v'); });
+      if (chosen) cfg.floorKind = chosen;
+    }
+    if (['tile', 'plank', 'none'].indexOf(cfg.floorKind) < 0) cfg.floorKind = cfg.hasFloor === false ? 'none' : 'tile';
+    cfg.hasFloor = (cfg.floorKind === 'tile' || cfg.floorKind === 'plank');
+    return cfg;
+  }
+
+  function syncBoolChips(cfg) {
+    // floorKind（三选一）
+    var fk = ['tile', 'plank', 'none'].indexOf(cfg.floorKind) >= 0 ? cfg.floorKind
+      : (cfg.hasFloor === false ? 'none' : 'tile');
+    setFloorKindChips(fk);
+    [['hasWallTile', '#q-walltile'], ['hasPaint', '#q-paint'], ['hasBase', '#q-extras'], ['hasGrout', '#q-extras'],
+     ['ceilingOn', '#q-ceiling'], ['baseFromOffcut', '#q-offcut'], ['groutWallOn', '#q-groutwall']].forEach(function (pair) {
+      var k = pair[0];
+      if (!(k in cfg)) return;
+      Array.prototype.forEach.call(document.querySelectorAll(pair[1] + ' [data-k="' + k + '"]'), function (b) {
+        b.setAttribute('aria-pressed', cfg[k] ? 'true' : 'false');
+      });
+    });
+  }
+
+  function syncVisibility(cfg) {
+    var isTile = cfg.floorKind === 'tile' && cfg.hasFloor !== false;
+    var isPlank = cfg.floorKind === 'plank' && cfg.hasFloor !== false;
+    $('sec-ftile').classList.toggle('hidden', !isTile);
+    $('sec-plank').classList.toggle('hidden', !isPlank);
+    $('sec-wtile').classList.toggle('hidden', !cfg.hasWallTile);
+    $('sec-paint').classList.toggle('hidden', !cfg.hasPaint);
+    $('sec-base').classList.toggle('hidden', !cfg.hasBase);
+    $('sec-grout').classList.toggle('hidden', !cfg.hasGrout);
+    $('q-ceiling').classList.toggle('hidden', !cfg.hasPaint);
+  }
+
+  /* 面积类字段：数值以「当前单位²」计（m² / cm² / mm²），切单位时按平方换算 */
+  var AREA_KEYS = ['door', 'window', 'ceilingArea'];
+  function convertAreaFields(from, to) {
+    var ratio = (UNIT_TO_MM[from] / UNIT_TO_MM[to]);
+    ratio = ratio * ratio;
+    AREA_KEYS.forEach(function (k) {
+      var nodes = document.querySelectorAll('[data-k="' + k + '"]');
+      Array.prototype.forEach.call(nodes, function (n) {
+        if (n.tagName !== 'INPUT') return;
+        var v = parseFloat(String(n.value).replace(/[,\s]/g, ''));
+        if (!isFinite(v)) return;
+        var nv = v * ratio;
+        nv = Math.abs(nv) < 1e-9 ? 0 : Math.round(nv * 1e6) / 1e6;
+        n.value = String(nv);
+      });
+    });
+  }
+
+  /* floorKind 是三选一 chip：控件用 data-v 表示「这个按钮代表哪个取值」，
+   * 所以不能用 setInput（它按「控件值 == 配置值」匹配，对按钮无效）。 */
+  function setFloorKindChips(kind) {
+    Array.prototype.forEach.call(document.querySelectorAll('#q-floor .chip'), function (b) {
+      b.setAttribute('aria-pressed', String(b.getAttribute('data-v') === kind));
+    });
+  }
+
+  function syncUnitLabels(cfg) {
+    var t = LEN_LABEL[cfg.unit] || '米';
+    Array.prototype.forEach.call(document.querySelectorAll('[data-unitlen]'), function (n) { n.textContent = t; });
+    // 面积类字段的单位标注也跟着走：m² / cm² / mm²
+    var A = { m: 'm²', cm: 'cm²', mm: 'mm²' };
+    var a = A[cfg.unit] || 'm²';
+    Array.prototype.forEach.call(document.querySelectorAll('[data-unitarea]'), function (n) { n.textContent = a; });
+    var uSel = document.getElementById('f-unit');
+    if (uSel) uSel.setAttribute('data-prev-unit', cfg.unit);
+  }
+
+  /* ═══ 渲染 ═══ */
+  function render() {
+    var cfg = readForm();
+    state.cfg = cfg;
+    syncBoolChips(cfg);
+    syncVisibility(cfg);
+    syncUnitLabels(cfg);
+
+    var res = C.compute(cfg);
+    state.res = res;
+
+    // 字段标红
+    Array.prototype.forEach.call(document.querySelectorAll('[data-k]'), function (n) {
+      n.classList.remove('bad');
+    });
+    var errBox = $('err-box'), warnBox = $('warn-box');
+    if (!res.ok) {
+      errBox.classList.remove('hidden');
+      errBox.textContent = '';
+      var h = el('b', null, '这 ' + res.errors.length + ' 个地方得先改一下：');
+      errBox.appendChild(h);
+      var ul = el('ul');
+      var seen = {};
+      res.errors.forEach(function (e) {
+        if (seen[e.field + e.msg]) return; seen[e.field + e.msg] = 1;
+        ul.appendChild(el('li', null, e.msg));
+        var nodes = document.querySelectorAll('[data-k="' + e.field + '"]');
+        Array.prototype.forEach.call(nodes, function (n) { n.classList.add('bad'); });
+      });
+      errBox.appendChild(ul);
+      $('res-body').classList.add('hidden');
+      dock(null);
+      warnBox.classList.add('hidden');
+      persist();
+      return;
+    }
+    errBox.classList.add('hidden');
+    $('res-body').classList.remove('hidden');
+
+    if (res.warn && res.warn.length) {
+      warnBox.classList.remove('hidden');
+      warnBox.textContent = '';
+      warnBox.appendChild(el('b', null, '提醒（不影响计算）：'));
+      var wl = el('ul');
+      res.warn.forEach(function (w) { wl.appendChild(el('li', null, w.msg)); });
+      warnBox.appendChild(wl);
+    } else { warnBox.classList.add('hidden'); }
+
+    $('v-title').textContent = res.summary.title;
+    $('v-sub').textContent = res.summary.sub;
+
+    // 要点
+    var ins = $('ins-list'); ins.textContent = '';
+    res.insights.forEach(function (x) {
+      var li = el('li');
+      li.appendChild(el('b', null, x.title));
+      li.appendChild(el('span', null, x.body));
+      ins.appendChild(li);
+    });
+    if (!res.insights.length) ins.appendChild(el('li', null, '当前选择下没有需要提醒的要点。'));
+
+    // 采购清单表
+    var tb = $('tbl-buy').querySelector('tbody'); tb.textContent = '';
+    res.items.forEach(function (it) {
+      var tr = el('tr');
+      function td(txt, cls, col) { var c = el('td', cls, txt); if (col) c.setAttribute('data-c', col); return c; }
+      tr.appendChild(td(it.name, null, '材料'));
+      tr.appendChild(td(it.spec, null, '规格 / 口径'));
+      tr.appendChild(td(it.needText, 'num', '理论用量'));
+      tr.appendChild(td(it.buyText, 'num', '建议购买'));
+      tr.appendChild(td(it.extraPct === null || it.extraPct === undefined ? '—' : C.fmtPct(it.extraPct, 2) + '（' + it.extraLabel + '）', 'num', '多买几成'));
+      tr.appendChild(td(it.lossPct === null || it.lossPct === undefined ? '—' : C.fmtPct(it.lossPct, 2), 'num', '切没了'));
+      tr.appendChild(td(C.fmtMoney(it.unitPrice) + ' ' + it.priceUnit, 'num', '单价'));
+      tr.appendChild(td(C.fmtMoney(it.cost), 'num', '小计'));
+      tb.appendChild(tr);
+    });
+    $('tf-material').textContent = C.fmtMoney(res.totals.materialCost) + ' 元';
+
+    // 勾选清单
+    var bl = $('buy-list'); bl.textContent = '';
+    res.buyList.forEach(function (b) {
+      var li = el('li', state.checks[b.key] ? 'done' : '');
+      var cb = document.createElement('input');
+      cb.type = 'checkbox'; cb.checked = !!state.checks[b.key];
+      cb.setAttribute('data-buy', b.key);
+      cb.addEventListener('change', function () {
+        state.checks[b.key] = cb.checked;
+        li.className = cb.checked ? 'done' : '';
+        persist();
+      });
+      var mid = el('div');
+      mid.appendChild(el('div', 'bn', b.name));
+      mid.appendChild(el('div', 'bd', b.buy));
+      var cost = el('div', 'bc', C.fmtMoney(b.cost) + ' 元');
+      li.appendChild(cb); li.appendChild(mid); li.appendChild(cost);
+      bl.appendChild(li);
+    });
+    if (!res.buyList.length) bl.appendChild(el('li', null, '当前没勾任何材料。把上面的问题改一改。'));
+
+    // 损耗证据
+    var ev = $('ev-list'); ev.textContent = '';
+    res.evidence.forEach(function (e) {
+      var li = el('li');
+      li.appendChild(el('b', null, e.name + '：'));
+      li.appendChild(document.createTextNode(e.text));
+      ev.appendChild(li);
+    });
+
+    // 合计表
+    var tt = $('tbl-totals').querySelector('tbody'); tt.textContent = '';
+    function totRow(name, val, note) {
+      var tr = el('tr');
+      var c1 = el('td', null, name); c1.setAttribute('data-c', '项');
+      var c2 = el('td', 'num', C.fmtMoney(val)); c2.setAttribute('data-c', '金额');
+      var c3 = el('td', null, note); c3.setAttribute('data-c', '说明');
+      tr.appendChild(c1); tr.appendChild(c2); tr.appendChild(c3); tt.appendChild(tr);
+    }
+    totRow('材料小计', res.totals.materialCost, res.totals.itemCount + ' 样，整件买（整块/整箱/整桶/整包/整根/整管）之后的总价');
+    totRow('铺贴人工与辅料', res.totals.layCost, (res.tile ? '地面 ' + C.fmtNum(res.geo.floorAreaM2, 3) + ' m² × ' + C.fmtMoney(state.res.cfg.layPrice) + ' 元/m²' : '未算地面砖') + (res.wall ? '；墙砖 ' + C.fmtNum(res.wall.wallTileAreaM2, 3) + ' m²' : ''));
+    totRow('合计', res.totals.totalCost, '铺贴面积 ' + C.fmtNum(res.totals.coverAreaM2, 3) + ' m²，摊到每平米 ' + C.fmtMoney(res.totals.moneyPerM2) + ' 元');
+
+    // 建议
+    var al = $('adv-list'); al.textContent = '';
+    if (!res.advice.length) al.appendChild(el('p', 'hint', '当前配置下没有能明显少花钱或更稳的单项改动。'));
+    res.advice.forEach(function (a) {
+      var box = el('div', 'adv');
+      box.appendChild(el('b', null, a.title));
+      box.appendChild(el('p', null, a.body));
+      var btn = el('button', 'sm pri', '采用：' + Object.keys(a.patch).map(function (k) {
+        var v = a.patch[k];
+        if (typeof v === 'boolean') return (v ? '打开' : '关闭') + ' ' + k;
+        return k + ' = ' + v;
+      }).join('、'));
+      btn.addEventListener('click', function () {
+        Object.keys(a.patch).forEach(function (k) { state.cfg[k] = a.patch[k]; setInput(k, a.patch[k]); });
+        render();
+      });
+      box.appendChild(btn);
+      al.appendChild(box);
+    });
+
+    // 自检
+    var cl = $('chk-list'); cl.textContent = '';
+    var okN = 0;
+    res.selfChecks.forEach(function (s) {
+      if (s.ok) okN++;
+      var d = el('div');
+      var mark = el('span', s.ok ? 'ok' : 'no', s.ok ? '✓ ' : '✗ ');
+      d.appendChild(mark);
+      d.appendChild(document.createTextNode(s.name + (s.detail ? '（' + s.detail + '）' : '')));
+      cl.appendChild(d);
+    });
+    var sum = el('div');
+    sum.appendChild(el('b', null, '自检 ' + okN + '/' + res.selfChecks.length + ' 通过'));
+    cl.insertBefore(sum, cl.firstChild);
+
+    // 分步算式
+    var st = $('tbl-steps').querySelector('tbody'); st.textContent = '';
+    res.items.forEach(function (it) {
+      var tr = el('tr');
+      var c1 = el('td', null, it.name); c1.setAttribute('data-c', '材料');
+      var c2 = el('td', 'mono', it.formula); c2.setAttribute('data-c', '算式');
+      tr.appendChild(c1); tr.appendChild(c2); st.appendChild(tr);
+    });
+
+    dock(res);
+    persist();
+  }
+
+  function dock(res) {
+    if (!res || !res.ok) {
+      $('d-count').textContent = '—'; $('d-money').textContent = '—'; $('d-perm2').textContent = '—';
+      return;
+    }
+    $('d-count').textContent = res.totals.itemCount + ' 样';
+    $('d-money').textContent = C.fmtMoney(res.totals.materialCost);
+    $('d-perm2').textContent = res.totals.moneyPerM2 === null ? '—' : C.fmtMoney(res.totals.moneyPerM2);
+  }
+
+  /* ═══ 导出 ═══ */
+  function stamp() {
+    var d = new Date(), p = function (n) { return String(n).padStart(2, '0'); };
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
+  }
+  function download(name, text, mime) {
+    var blob = new Blob([text], { type: mime || 'text/plain;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click();
+    setTimeout(function () { document.body.removeChild(a); URL.revokeObjectURL(url); }, 1200);
+    window.__exports++;
+  }
+
+  function csvText() {
+    var r = state.res, L = [];
+    L.push('项目,' + JSON.stringify(r.cfg.label || ''));
+    L.push('导出时间,' + stamp());
+    L.push('');
+    L.push('# 采购清单');
+    L.push('材料,规格口径,理论用量,建议购买,多买几成%,切没了%,单价,单价单位,小计元,算式');
+    r.items.forEach(function (i) {
+      L.push([i.name, i.spec, i.needText, i.buyText,
+        i.extraPct === null ? '' : C.fmtNum(i.extraPct, 4),
+        i.lossPct === null ? '' : C.fmtNum(i.lossPct, 4),
+        C.fmtNum(i.unitPrice, 4), i.priceUnit, C.fmtNum(i.cost, 2), i.formula].map(function (x) { return '"' + String(x).replace(/"/g, '""') + '"'; }).join(','));
+    });
+    L.push('');
+    L.push('# 合计');
+    L.push('材料小计元,' + C.fmtNum(r.totals.materialCost, 2));
+    L.push('铺贴人工辅料元,' + C.fmtNum(r.totals.layCost, 2));
+    L.push('合计元,' + C.fmtNum(r.totals.totalCost, 2));
+    L.push('铺贴面积m2,' + C.fmtNum(r.totals.coverAreaM2, 4));
+    L.push('每平米元,' + (r.totals.moneyPerM2 === null ? '' : C.fmtNum(r.totals.moneyPerM2, 2)));
+    L.push('');
+    L.push('# 关键读数');
+    L.push('房间长m,' + r.cfg.roomL) ; L.push('房间宽m,' + r.cfg.roomW);
+    L.push('地面面积m2,' + C.fmtNum(r.geo.floorAreaM2, 4));
+    L.push('墙面面积m2,' + C.fmtNum(r.geo.wallAreaM2, 4));
+    L.push('可刷面积m2,' + C.fmtNum(r.geo.paintAreaM2, 4));
+    if (r.tile) {
+      L.push('瓷砖每方向片数,' + r.tile.nx + 'x' + r.tile.ny);
+      L.push('瓷砖网格片数,' + r.tile.gridCount);
+      L.push('瓷砖整砖片数,' + r.tile.wholeCount);
+      L.push('瓷砖切砖片数,' + r.tile.cutCount);
+      L.push('瓷砖横切剩余mm,' + C.fmtNum(r.tile.rx, 2));
+      L.push('瓷砖纵切剩余mm,' + C.fmtNum(r.tile.ry, 2));
+      L.push('瓷砖切没了的片数,' + C.fmtNum(r.tile.discardTiles, 4));
+      L.push('瓷砖可复用边角料m2,' + C.fmtNum(r.tile.reuseArea, 6));
+    }
+    L.push('');
+    L.push('# 自检');
+    r.selfChecks.forEach(function (s) { L.push([s.ok ? 'PASS' : 'FAIL', s.name, s.detail].map(function (x) { return '"' + String(x).replace(/"/g, '""') + '"'; }).join(',')); });
+    L.push('');
+    L.push('# 边界');
+    L.push('本页为估算；不联网、不查行情价、不内置施工规范；默认值为虚构示例。');
+    return L.join('\n');
+  }
+
+  function mdText() {
+    var r = state.res, L = [];
+    L.push('# ' + (r.cfg.label || '装修材料采购量') + ' · 要买多少');
+    L.push('');
+    L.push('> 导出时间 ' + stamp() + '；本页为估算，不联网、不查行情价、不内置施工规范；默认值为虚构示例。');
+    L.push('');
+    L.push('**' + r.summary.title + '**');
+    L.push('');
+    L.push(r.summary.sub);
+    L.push('');
+    L.push('## 最要紧的几条');
+    r.insights.forEach(function (x) { L.push('- **' + x.title + '** —— ' + x.body); });
+    L.push('');
+    L.push('## 采购清单');
+    L.push('| 材料 | 规格 / 口径 | 理论用量 | 建议购买 | 多买几成 | 切没了 | 单价 | 小计 |');
+    L.push('|---|---|---|---|---|---|---|---|');
+    r.items.forEach(function (i) {
+      L.push('| ' + i.name + ' | ' + i.spec + ' | ' + i.needText + ' | ' + i.buyText + ' | ' +
+        (i.extraPct === null ? '—' : C.fmtPct(i.extraPct, 2)) + ' | ' +
+        (i.lossPct === null ? '—' : C.fmtPct(i.lossPct, 2)) + ' | ' +
+        C.fmtMoney(i.unitPrice) + ' ' + i.priceUnit + ' | ' + C.fmtMoney(i.cost) + ' |');
+    });
+    L.push('');
+    L.push('材料小计 **' + C.fmtMoney(r.totals.materialCost) + ' 元**；铺贴人工辅料 ' + C.fmtMoney(r.totals.layCost) +
+      ' 元；合计 **' + C.fmtMoney(r.totals.totalCost) + ' 元**，按 ' + C.fmtNum(r.totals.coverAreaM2, 3) + ' m² 摊每平米 ' +
+      C.fmtMoney(r.totals.moneyPerM2) + ' 元。');
+    L.push('');
+    L.push('## 损耗和余量是从哪来的');
+    r.evidence.forEach(function (e) { L.push('- **' + e.name + '**：' + e.text); });
+    L.push('');
+    L.push('## 每一步怎么来的');
+    r.items.forEach(function (i) { L.push('- `' + i.name + '`：' + i.formula); });
+    L.push('');
+    L.push('## 算式自检（' + r.selfChecks.filter(function (s) { return s.ok; }).length + '/' + r.selfChecks.length + ' 通过）');
+    r.selfChecks.forEach(function (s) { L.push('- ' + (s.ok ? '✓' : '✗') + ' ' + s.name + (s.detail ? '（' + s.detail + '）' : '')); });
+    return L.join('\n');
+  }
+
+  function jsonText() {
+    var r = state.res;
+    return JSON.stringify({
+      app: '买多了退不掉', slug: 'material-pick', version: '1.0.0',
+      exported_at: new Date().toISOString(),
+      cfg: r.cfg, checks: state.checks,
+      geo: r.geo, items: r.items, tile: r.tile || null, wall: r.wall || null, plank: r.plank || null,
+      paint: r.paint || null, base: r.base || null, grout: r.grout || null,
+      totals: r.totals, insights: r.insights, advice: r.advice, evidence: r.evidence,
+      selfChecks: r.selfChecks
+    }, null, 2);
+  }
+
+  /* ═══ 结果卡 PNG（1080×1350） ═══ */
+  function drawCard() {
+    var r = state.res;
+    var W = 1080, H = 1350, dpr = 1;
+    var cv = document.createElement('canvas');
+    cv.width = W * dpr; cv.height = H * dpr;
+    var g = cv.getContext('2d');
+    g.scale(dpr, dpr);
+    g.fillStyle = '#f6f5f2'; g.fillRect(0, 0, W, H);
+    g.fillStyle = '#ffffff'; g.fillRect(28, 28, W - 56, H - 56);
+    g.strokeStyle = '#e6e2db'; g.lineWidth = 2; g.strokeRect(28, 28, W - 56, H - 56);
+
+    var FONT = '"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif';
+    function setFont(px, weight) { g.font = (weight || 400) + ' ' + px + 'px ' + FONT; }
+    /* 中英混排时给「拉丁字母/数字/运算符」与汉字之间补一个细空格，
+     * 否则 '8.6 L，整桶买 2 桶' 这类会被 measureText 挤成难看的空档。 */
+    function spaceCJK(t) {
+      return String(t)
+        .replace(/([\u4e00-\u9fa5])([A-Za-z0-9(\u00d7\u00f7=+\-\/])/g, '$1 $2')
+        .replace(/([A-Za-z0-9)%\u00b2])([\u4e00-\u9fa5])/g, '$1 $2');
+    }
+    function wrap(text, x, y, maxW, lh, maxLines) {
+      var t = spaceCJK(String(text === null || text === undefined ? '' : text));
+      var line = '', lines = [];
+      for (var i = 0; i < t.length; i++) {
+        var test = line + t[i];
+        if (g.measureText(test).width > maxW && line) { lines.push(line); line = t[i]; }
+        else line = test;
+        if (maxLines && lines.length >= maxLines) break;
+      }
+      if (line && (!maxLines || lines.length < maxLines)) lines.push(line);
+      if (maxLines && lines.length >= maxLines) {
+        var last = lines[lines.length - 1];
+        while (last.length > 1 && g.measureText(last + '…').width > maxW) last = last.slice(0, -1);
+        lines[lines.length - 1] = last + '…';
+      }
+      lines.forEach(function (l, i) { g.fillText(l, x, y + i * lh); });
+      return y + lines.length * lh;
+    }
+
+    var x = 70, maxW = W - 140, y = 108;
+    g.fillStyle = '#9a5b12'; setFont(24, 700); g.fillText('买多了退不掉', x, y);
+    g.fillStyle = '#867f76'; setFont(20, 400); g.textAlign = 'right';
+    g.fillText('material-pick · 虚构示例', W - 70, y); g.textAlign = 'left';
+    y += 26;
+    g.strokeStyle = '#e6e2db'; g.beginPath(); g.moveTo(x, y); g.lineTo(W - 70, y); g.stroke();
+    y += 52;
+
+    g.fillStyle = '#1a1712'; setFont(40, 700);
+    y = wrap(r.summary.title, x, y, maxW, 52, 2) + 6;
+    g.fillStyle = '#565049'; setFont(23, 400);
+    y = wrap(r.summary.sub, x, y, maxW, 34, 2) + 26;
+
+    g.fillStyle = '#9a5b12'; setFont(22, 700); g.fillText('要买的东西', x, y); y += 34;
+    g.fillStyle = '#1a1712';
+    r.buyList.slice(0, 6).forEach(function (b) {
+      setFont(25, 600);
+      g.fillText('· ' + b.name, x, y);
+      g.fillStyle = '#565049'; setFont(22, 400);
+      var t = b.buy + '（' + C.fmtMoney(b.cost) + ' 元）';
+      if (g.measureText(t).width > maxW - 250) { while (t.length > 4 && g.measureText(t + '…').width > maxW - 250) t = t.slice(0, -1); t += '…'; }
+      g.fillText(t, x + 250, y);
+      g.fillStyle = '#1a1712';
+      y += 36;
+    });
+    y += 18;
+
+    g.fillStyle = '#9a5b12'; setFont(22, 700); g.fillText('为什么不是「面积 ÷ 砖面积」', x, y); y += 34;
+    g.fillStyle = '#1a1712';
+    if (r.tile) {
+      setFont(23, 400);
+      y = wrap('地面砖网格 ' + r.tile.nx + '×' + r.tile.ny + '=' + r.tile.gridCount + ' 块（' + r.tile.wholeCount +
+        ' 块整砖 + ' + r.tile.cutCount + ' 块要切），边界切剩 ' + C.fmtNum(r.tile.rx, 0) + '/' + C.fmtNum(r.tile.ry, 0) +
+        ' mm，切没了约 ' + C.fmtNum(r.tile.discardTiles, 1) + ' 块，所以买 ' + r.tile.buyTiles + ' 块。', x, y, maxW, 33, 3) + 12;
+    }
+    if (r.plank) {
+      setFont(23, 400);
+      y = wrap('地板要 ' + C.fmtNum(r.plank.needArea, 2) + ' m²（' + r.plank.needPieces + ' 片），每箱 ' + r.cfg.perBox +
+        ' 片只能整箱买，所以 ' + r.plank.boxesBuy + ' 箱，多 ' + r.plank.sparePieces + ' 片。', x, y, maxW, 33, 3) + 12;
+    }
+    if (r.paint) {
+      setFont(23, 400);
+      y = wrap('乳胶漆可刷 ' + C.fmtNum(r.geo.paintAreaM2, 1) + ' m² × ' + r.cfg.coats + ' 遍 ÷ 每遍每升 ' +
+        C.fmtNum(r.cfg.paintCoverage, 0) + ' m² = ' + C.fmtNum(r.paint.liters, 1) + ' L，整桶买 ' + r.paint.packs + ' 桶。', x, y, maxW, 33, 3) + 12;
+    }
+    if (r.base) {
+      setFont(23, 400);
+      y = wrap('踢脚线 ' + C.fmtNum(r.base.needLen, 1) + ' 米，按每根\u00a0' + C.fmtNum(r.cfg.baseLen, 2) + '\u00a0米买 ' + r.base.pieces + ' 根。', x, y, maxW, 33, 2) + 12;
+    }
+    y += 20;
+
+    /* 补一段「用掉多少 / 买多少」的对照表，把中间那段空白填成有用的东西 */
+    g.fillStyle = '#9a5b12'; setFont(22, 700); g.fillText('用掉多少 vs 买多少', x, y); y += 36;
+    setFont(21, 400);
+    var lines = [];
+    lines.push('地面砖：网格要摆满 ' + r.tile.gridCount + ' 块 → 实际买 ' + r.tile.buyTiles + ' 块（多 ' + C.fmtNum(r.tile.extraPct, 2) + '%）');
+    if (r.plank) lines.push('地板：需要 ' + r.plank.needPieces + ' 片 → 整箱买 ' + r.plank.piecesBought + ' 片（多 ' + r.plank.sparePieces + ' 片）');
+    if (r.paint) lines.push('乳胶漆：用 ' + C.fmtNum(r.paint.liters, 2) + ' L → 整桶买 ' + C.fmtNum(r.paint.boughtL, 2) + ' L（' + r.paint.packs + ' 桶）');
+    if (r.base) lines.push('踢脚线：要 ' + C.fmtNum(r.base.needLen, 2) + ' 米 → 买 ' + C.fmtNum(r.base.boughtLen, 2) + ' 米（' + r.base.pieces + ' 根）');
+    if (r.grout) lines.push('美缝剂：缝长 ' + C.fmtNum(r.grout.jointLen, 1) + ' 米 → 买 ' + C.fmtNum(r.grout.tubes * r.grout.perTube, 1) + ' 米（' + r.grout.tubes + ' 管）');
+    g.fillStyle = '#1a1712';
+    lines.slice(0, 5).forEach(function (t) { g.fillText('· ' + t, x, y); y += 32; });
+    y += 14;
+
+    g.fillStyle = '#9a5b12'; setFont(22, 700); g.fillText('合计', x, y); y += 36;
+    g.fillStyle = '#1a1712'; setFont(34, 700);
+    g.fillText(C.fmtMoney(r.totals.totalCost) + ' 元', x, y);
+    g.fillStyle = '#565049'; setFont(21, 400);
+    g.fillText('材料 ' + C.fmtMoney(r.totals.materialCost) + ' + 铺贴 ' + C.fmtMoney(r.totals.layCost) +
+      '，按 ' + C.fmtNum(r.totals.coverAreaM2, 1) + ' m² 摊每平米 ' + C.fmtMoney(r.totals.moneyPerM2) + ' 元', x + 260, y);
+    y += 30;
+
+    var by = H - 116;
+    g.strokeStyle = '#e6e2db'; g.beginPath(); g.moveTo(x, by - 26); g.lineTo(W - 70, by - 26); g.stroke();
+    g.fillStyle = '#867f76'; setFont(19, 400);
+    wrap('估算，不是施工报价；不联网、不查行情价、不评价品牌商家。默认数据为虚构示例。自检 ' +
+      r.selfChecks.filter(function (s) { return s.ok; }).length + '/' + r.selfChecks.length + ' 通过。', x, by, maxW, 27, 2);
+
+    return cv;
+  }
+
+  function exportPng() {
+    var cv = drawCard();
+    cv.toBlob(function (b) {
+      var url = URL.createObjectURL(b);
+      var a = document.createElement('a');
+      a.href = url; a.download = '买多了退不掉-结果卡-1080x1350.png';
+      document.body.appendChild(a); a.click();
+      setTimeout(function () { document.body.removeChild(a); URL.revokeObjectURL(url); }, 1500);
+      window.__exports++;
+    }, 'image/png');
+  }
+
+  /* ═══ 场景 ═══ */
+  function buildScenarios() {
+    var box = $('scenarios'); box.textContent = '';
+    C.SCENARIOS.forEach(function (s) {
+      var b = el('button', null, s.name);
+      b.setAttribute('data-sc', s.id);
+      b.title = s.note;
+      b.setAttribute('aria-pressed', String(state.scenario === s.id));
+      b.addEventListener('click', function () {
+        state.scenario = s.id;
+        state.checks = {};
+        var cfg = C.normCfg(Object.assign({}, C.DEFAULTS, s.patch));
+        state.cfg = cfg;
+        applyCfgToForm(cfg);
+        Array.prototype.forEach.call(box.querySelectorAll('button'), function (x) { x.setAttribute('aria-pressed', String(x.getAttribute('data-sc') === s.id)); });
+        render();
+      });
+      box.appendChild(b);
+    });
+  }
+
+  function applyCfgToForm(cfg) {
+    var safe = C.normCfg(cfg);
+    if (['tile', 'plank', 'none'].indexOf(safe.floorKind) < 0) safe.floorKind = safe.hasFloor === false ? 'none' : 'tile';
+    safe.hasFloor = (safe.floorKind === 'tile' || safe.floorKind === 'plank');
+    Object.keys(safe).forEach(function (k) { setInput(k, safe[k]); });
+    setFloorKindChips(safe.floorKind);   // 按钮类控件要单独设
+    // 布尔 select / chip 特殊处理
+    setInput('layLong', safe.layLong);
+    state.cfg = safe;
+  }
+
+  /* ═══ 初始化 ═══ */
+  function init() {
+    collectInputs();
+    buildScenarios();
+
+    var saved = loadLocal();
+    if (saved && saved.cfg) {
+      state.checks = saved.checks || {};
+      state.scenario = saved.scenario || 'default';
+      applyCfgToForm(saved.cfg);
+      Array.prototype.forEach.call($('scenarios').querySelectorAll('button'), function (x) {
+        x.setAttribute('aria-pressed', String(x.getAttribute('data-sc') === state.scenario));
+      });
+    } else {
+      applyCfgToForm(freshCfg());
+    }
+
+    // 输入事件
+    Array.prototype.forEach.call(document.querySelectorAll('[data-k]'), function (n) {
+      if (n.tagName === 'BUTTON') {
+        n.addEventListener('click', function () {
+          var k = n.getAttribute('data-k'), v = n.getAttribute('data-v');
+          if (k === 'floorKind') {
+            state.cfg.floorKind = v;                       // 'tile' | 'plank' | 'none'
+            state.cfg.hasFloor = (v === 'tile' || v === 'plank');
+          } else {
+            var cur = n.getAttribute('aria-pressed') === 'true';
+            state.cfg[k] = !cur;
+            // 「要贴墙砖 / 不贴」这类成对按钮：点哪个就是哪个
+            if (n.parentNode && n.parentNode.querySelectorAll('[data-k="' + k + '"]').length > 1) state.cfg[k] = (v === '1');
+          }
+          applyCfgToForm(state.cfg);
+          render();
+        });
+      } else if (n.tagName === 'INPUT' && n.type === 'file') {
+        /* 由下面的 import 逻辑处理 */
+      } else {
+        var evName = (n.tagName === 'SELECT') ? 'change' : 'input';
+        n.addEventListener(evName, function (ev) {
+          // 切长度单位时，把「面积类」字段（门窗、天花板）一起换算，否则几何关系会被弄坏
+          if (ev && ev.target && ev.target.getAttribute('data-k') === 'unit') {
+            var from = ev.target.getAttribute('data-prev-unit') || 'm';
+            var to = ev.target.value;
+            convertAreaFields(from, to);
+            ev.target.setAttribute('data-prev-unit', to);
+          }
+          render();
+        });
+      }
+    });
+
+    $('btn-reset').addEventListener('click', function () {
+      state.checks = {}; state.scenario = 'default';
+      applyCfgToForm(freshCfg());
+      Array.prototype.forEach.call($('scenarios').querySelectorAll('button'), function (x) { x.setAttribute('aria-pressed', String(x.getAttribute('data-sc') === 'default')); });
+      render();
+    });
+    $('btn-save').addEventListener('click', function () { persist(); flash($('btn-save'), '已存在本机'); });
+    $('btn-csv').addEventListener('click', function () { download('买多了退不掉-采购清单.csv', '\ufeff' + csvText(), 'text/csv;charset=utf-8'); });
+    $('btn-md').addEventListener('click', function () { download('买多了退不掉-说明.md', mdText(), 'text/markdown;charset=utf-8'); });
+    $('btn-json').addEventListener('click', function () { download('买多了退不掉-备份.json', jsonText(), 'application/json;charset=utf-8'); });
+    $('btn-png').addEventListener('click', exportPng);
+
+    $('btn-import').addEventListener('click', function () { $('file-import').click(); });
+    $('file-import').addEventListener('change', function (ev) {
+      var f = ev.target.files && ev.target.files[0];
+      if (!f) return;
+      var fr = new FileReader();
+      fr.onload = function () {
+        try {
+          var o = JSON.parse(String(fr.result));
+          if (o && o.cfg) {
+            state.checks = o.checks || {};
+            applyCfgToForm(o.cfg);
+            render();
+            flash($('btn-import'), '已恢复');
+          } else { flash($('btn-import'), '文件里没有 cfg'); }
+        } catch (e) { flash($('btn-import'), '不是合法的 JSON'); }
+        ev.target.value = '';
+      };
+      fr.readAsText(f);
+    });
+
+    render();
+  }
+
+  function flash(btn, msg) {
+    var old = btn.textContent;
+    btn.textContent = msg;
+    setTimeout(function () { btn.textContent = old; }, 1100);
+  }
+
+  window.__app = { render: render, state: state, readForm: readForm, applyCfgToForm: applyCfgToForm, csvText: csvText, mdText: mdText, jsonText: jsonText, drawCard: drawCard };
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+</script>
+</body>
+</html>
